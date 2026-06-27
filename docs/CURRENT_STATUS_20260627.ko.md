@@ -1,6 +1,6 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-28 00:48 KST
+최종 갱신: 2026-06-28 01:00 KST
 작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
@@ -90,21 +90,22 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - optimizer: `adamw_8bit`
 - `gradient_checkpointing=True`
 
-2026-06-28 00:48 KST 기준:
+2026-06-28 01:00 KST 기준:
 
-- 모델 로딩 완료
-- full corpus tokenization/packing 막바지 진행 중
+- full corpus tokenization 완료
+- packing 완료 후 실제 optimizer step 진입
 - 로그 위치: `lfm2_ko_cpt/logs/20260628_lfm25_8b_ko_cpt_full_lfmstyle/train.log`
-- 진행: 약 `4.59M / 4.62M rows`, 99%
-- GPU VRAM: 각 GPU 약 `20-22GB / 143GB`
-- GPU util: 아직 optimizer step 전이라 0에 가까운 상태가 정상
-- 예상: tokenization 종료 후 `Num examples`, `Total optimization steps`, step loss 로그가 뜨면 실제 학습 시작
+- loss 로그 확인: 약 37 step, 최근 loss 약 `1.92`
+- GPU VRAM: 각 GPU 약 `82-84GB / 143GB`
+- GPU util: 각 GPU 약 `98-100%`
+- 첫 checkpoint는 `save_steps=1000` 기준 checkpoint-1000에서 생성 예정
 
 속도/예상:
 
 - practice 기준 체크포인트 저장 제외 약 `3.35-3.45 sec/step`
-- full corpus estimated steps: `12,384`
-- full 1 epoch 예상 runtime: 약 `12-15.5h` plus initial tokenization/packing
+- packed dataset 기준 실제 1 epoch 총 step은 약 `10.2k`로 관측됨
+- 첫 37 step 구간 기준 step 속도는 추후 100+ step에서 재측정
+- full 1 epoch 예상 runtime은 실제 step 속도 안정화 후 갱신
 
 ## Hugging Face Dataset Upload
 
@@ -128,7 +129,7 @@ https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-DATA
 - 생성 스크립트: `scripts/export_lfm25_tokenized_dataset.py`
 - 업로드 스크립트: `scripts/upload_cpt_dataset.py`
 
-중요: tokenized export는 별도 CPU/IO 작업이다. 학습이 실제 optimizer step에 들어가기 전까지는 current training tokenization/packing을 방해하지 않기 위해 실행하지 않는다.
+중요: tokenized export는 별도 CPU/IO 작업이다. 실제 학습 loss가 나온 뒤 `lfm2_ko_cpt_tokenized_export_watcher_20260628` 세션으로 낮은 우선순위(`nice`, `ionice`)에서 실행 중이다. 학습 GPU util이 98-100%로 유지되는지 계속 확인한다.
 
 ## 중단과 재개
 
@@ -167,6 +168,10 @@ git status --short
 
 최근 주요 커밋:
 
+- `13806b0 Wait for training loss before tokenized export`
+- `93299b7 Rebuild tokenized export cleanly`
+- `7976431 Tighten tokenized export watcher trigger`
+- `c77eac6 Add tokenized export watcher`
 - `78480a2 Add packed tokenized dataset export`
 - `3f5cf84 Add full CPT dataset upload workflow`
 - `ae72d2b Clarify Legalize KR citation guidance`
@@ -183,9 +188,9 @@ git status --short
 
 ## 다음 작업
 
-1. 학습 로그에서 `Total optimization steps`와 step `loss`가 뜨는지 확인한다.
-2. 실제 step 진입 후 VRAM/util을 확인한다. 예상보다 낮으면 다음 run에서 batch/seq/grad accumulation을 조정한다.
-3. 학습을 방해하지 않는 선에서 `scripts/export_lfm25_tokenized_dataset.py`를 낮은 우선순위로 실행해 tokenized Parquet shard를 만든다.
-4. tokenized shard가 생기면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
-5. checkpoint-1000 생성 시 모델 card에 intermediate checkpoint 상태를 반영한다.
+1. 100+ step 구간에서 실제 sec/step과 ETA를 갱신한다.
+2. checkpoint-1000 생성 여부를 확인한다.
+3. tokenized Parquet shard export가 끝나면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
+4. checkpoint-1000 생성 시 모델 card에 intermediate checkpoint 상태를 반영한다.
+5. GPU util이 떨어지거나 OOM/RuntimeError가 나오면 즉시 로그와 checkpoint 상태를 확인한다.
 6. 공개 평가 우선순위는 `KMMLU`, `KMMLU-Pro`, `Ko-IFEval`, `Ko-GSM8K`, `Ko-ARC`, 법률 RAG/source QA다.
