@@ -1,6 +1,8 @@
 ---
 license: other
 base_model: LiquidAI/LFM2.5-8B-A1B
+library_name: transformers
+pipeline_tag: text-generation
 language:
   - ko
   - en
@@ -22,35 +24,222 @@ datasets:
 
 # LFM2.5-8B-A1B-KO-CPT-FULL
 
-Korean continued-pretraining project for `LiquidAI/LFM2.5-8B-A1B`.
+Full-parameter Korean continued-pretraining project for [`LiquidAI/LFM2.5-8B-A1B`](https://huggingface.co/LiquidAI/LFM2.5-8B-A1B).
 
-This repository is being prepared as the full-parameter CPT checkpoint for a Korean-specialized LFM2.5 model. The immediate target is Korean legal, finance, wiki, and terminal/tool-use behavior while preserving the base model's general chat and instruction-following behavior.
+This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-style knowledge, and terminal/tool-use behavior while preserving the base model's general English and instruction-following ability.
 
-## Base Model
+> Status: the model card has been uploaded first. Full CPT training is in progress, and weights/checkpoints will be uploaded after training checkpoints are produced.
 
-- Base model: https://huggingface.co/LiquidAI/LFM2.5-8B-A1B
-- LFM2.5 release notes: https://www.liquid.ai/blog/introducing-lfm2-5-the-next-generation-of-on-device-ai
-- LFM text generation docs: https://docs.liquid.ai/lfm/key-concepts/text-generation-and-prompting
-- LFM chat template docs: https://docs.liquid.ai/lfm/key-concepts/chat-template
-- LFM tool-use docs: https://docs.liquid.ai/lfm/key-concepts/tool-use
-- Liquid Unsloth fine-tuning docs: https://docs.liquid.ai/lfm/fine-tuning/unsloth
+## Contents
 
-## Training Plan
+- [English](#english)
+- [Quick Start](#quick-start)
+- [Colab Example](#colab-example)
+- [Training Configuration](#training-configuration)
+- [Data Mix](#data-mix)
+- [Korean](#korean)
+- [한국어 사용법](#한국어-사용법)
+- [한국어 학습 설정](#한국어-학습-설정)
+- [Evaluation Plan](#evaluation-plan)
 
+## English
+
+`LFM2.5-8B-A1B-KO-CPT-FULL` is a full fine-tuned Korean CPT checkpoint, not a LoRA adapter. The training objective is text completion over a Korean-heavy corpus, with LFM chat-template formatting applied to instruction, RAG, and tool-use examples.
+
+Target strengths:
+
+- Korean legal document understanding and legal RAG-style answering
+- Korean finance explanations and finance-domain terminology
+- Korean wiki/general knowledge prose
+- Korean instruction-following
+- Terminal/tool-use style structured assistant behavior
+
+## Quick Start
+
+The examples below are intended for the full model repository after weights are uploaded.
+
+### Transformers
+
+```python
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL"
+
+tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+    trust_remote_code=True,
+)
+
+messages = [
+    {"role": "system", "content": "You are a precise Korean assistant."},
+    {"role": "user", "content": "대한민국 민법상 계약 해제와 해지의 차이를 간단히 설명해줘."},
+]
+
+prompt = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True,
+)
+inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+with torch.no_grad():
+    output = model.generate(
+        **inputs,
+        max_new_tokens=512,
+        temperature=0.6,
+        top_p=0.9,
+        do_sample=True,
+    )
+
+print(tokenizer.decode(output[0], skip_special_tokens=False))
+```
+
+### vLLM
+
+```bash
+vllm serve LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL \
+  --trust-remote-code \
+  --dtype bfloat16 \
+  --max-model-len 8192 \
+  --tensor-parallel-size 8
+```
+
+OpenAI-compatible request:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+
+response = client.chat.completions.create(
+    model="LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL",
+    messages=[
+        {"role": "system", "content": "You are a precise Korean assistant."},
+        {"role": "user", "content": "한국 기준금리 인상이 은행 순이자마진에 미치는 영향을 설명해줘."},
+    ],
+    temperature=0.5,
+    max_tokens=512,
+)
+
+print(response.choices[0].message.content)
+```
+
+## Colab Example
+
+Use this after model weights are uploaded. For typical Colab GPUs, start with 4-bit loading to avoid OOM.
+
+```python
+!pip install -U "transformers>=4.44" accelerate bitsandbytes sentencepiece huggingface_hub
+```
+
+```python
+import torch
+from huggingface_hub import login
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+# Optional for gated/private models:
+# login("hf_xxx")
+
+model_id = "LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL"
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16,
+    bnb_4bit_use_double_quant=True,
+)
+
+tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    quantization_config=bnb_config,
+    device_map="auto",
+    trust_remote_code=True,
+)
+
+messages = [
+    {"role": "system", "content": "너는 한국어로 정확하고 간결하게 답하는 어시스턴트다."},
+    {"role": "user", "content": "한국어로 주택임대차보호법의 대항력 요건을 설명해줘."},
+]
+
+prompt = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True,
+)
+inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+with torch.no_grad():
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=512,
+        temperature=0.5,
+        top_p=0.9,
+        do_sample=True,
+        eos_token_id=tokenizer.eos_token_id,
+    )
+
+print(tokenizer.decode(outputs[0], skip_special_tokens=False))
+```
+
+If you have an A100/H100/H200 runtime, bf16 loading can be used instead of 4-bit:
+
+```python
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+    trust_remote_code=True,
+)
+```
+
+### Prompt Format
+
+The model follows the LFM2 chat-template style. Use the tokenizer chat template when possible. The CPT corpus preserves these special tokens for chat and tool-use records:
+
+- `<|startoftext|>`
+- `<|im_start|>`
+- `<|im_end|>`
+- roles: `system`, `user`, `assistant`, `tool`
+
+References:
+
+- LFM text generation: https://docs.liquid.ai/lfm/key-concepts/text-generation-and-prompting
+- LFM chat template: https://docs.liquid.ai/lfm/key-concepts/chat-template
+- LFM tool use: https://docs.liquid.ai/lfm/key-concepts/tool-use
+
+## Training Configuration
+
+- Base model: [`LiquidAI/LFM2.5-8B-A1B`](https://huggingface.co/LiquidAI/LFM2.5-8B-A1B)
 - Method: full-parameter continued pretraining, not LoRA
 - Framework: Unsloth + TRL `SFTTrainer`
 - Hardware target: 8x NVIDIA H200
 - Context length: 8192
 - Precision: bf16 when supported
 - Optimizer: `adamw_8bit`
-- Batch: 8 GPUs x per-device batch 2 x grad accumulation 4
+- GPUs: 8
+- Per-device batch size: 2
+- Gradient accumulation steps: 4
 - Effective batch: 64 sequences/update
 - Maximum tokens/update: 524,288
+- Learning rate: 2e-5
 - Schedule: 1 epoch over the prepared full corpus
-- Checkpointing: every 1,000 steps
+- `max_steps`: -1
+- Checkpoint interval: 1,000 steps
 - Checkpoint retention: 4 latest checkpoints plus final model
 
-## Prepared Corpus
+Estimated full run:
+
+- Estimated tokens: 6,492,697,020
+- Estimated steps: 12,384
+- Observed practice speed: about 3.35-3.45 sec/step after warmup, excluding checkpoint writes
+- Conservative runtime estimate: 12-15.5 hours
+
+## Data Mix
 
 Prepared full mix:
 
@@ -65,27 +254,188 @@ Statistics:
 
 Per-source rows:
 
-- `kowiki_raw_full_20260524`: 611,403
-- `bcai_finance_kor_hrm_20260524`: 1,861,531
-- `korean_legal_raw_full_20260523`: 227,687
-- `korean_legal_tasks_full_20260524`: 1,383,340
-- `korean_admrule_precedent_raw_full_20260524`: 203,477
-- `ko_legal_source_agent_sft_20260621`: 5,999
-- `ko_legal_rag_agent_sft_round15_v2`: 749
-- `current_law_bar_json_answer_sft_20260621`: 2,000
-- `lfm25_terminal_toolbench_hrm_turns_v1`: 326,785
+| Source | Rows |
+| --- | ---: |
+| `kowiki_raw_full_20260524` | 611,403 |
+| `bcai_finance_kor_hrm_20260524` | 1,861,531 |
+| `korean_legal_raw_full_20260523` | 227,687 |
+| `korean_legal_tasks_full_20260524` | 1,383,340 |
+| `korean_admrule_precedent_raw_full_20260524` | 203,477 |
+| `ko_legal_source_agent_sft_20260621` | 5,999 |
+| `ko_legal_rag_agent_sft_round15_v2` | 749 |
+| `current_law_bar_json_answer_sft_20260621` | 2,000 |
+| `lfm25_terminal_toolbench_hrm_turns_v1` | 326,785 |
 
-## Formatting
+Raw Korean wiki/legal/finance documents are kept as plain completion text for CPT. Instruction, legal RAG, and terminal/tool-use examples are converted to LFM ChatML-style text.
 
-Raw Korean wiki/legal/finance documents are kept as plain completion text for CPT. Instruction, legal RAG, and terminal/tool-use examples are converted to LFM ChatML-style text with `<|startoftext|>`, `<|im_start|>`, and `<|im_end|>` role blocks.
+## Korean
 
-## Expected Runtime
+`LFM2.5-8B-A1B-KO-CPT-FULL`은 LoRA 어댑터가 아니라 full-parameter CPT 모델입니다. 목표는 LFM2.5-8B-A1B에 한국어 법률, 금융, 위키 지식과 터미널/도구 사용 스타일을 계속 사전학습으로 이식하는 것입니다.
 
-At the observed practice speed of roughly 3.35-3.45 seconds per step, 12,384 steps would take about 11.5-12 hours. A safer estimate including full-corpus packing/tokenization overhead is 12-15.5 hours.
+목표 성능:
+
+- 한국어 법률 문서 이해와 법률 RAG 답변
+- 한국어 금융 설명과 금융 용어 처리
+- 한국어 위키/일반 지식 문체
+- 한국어 instruction following
+- 터미널/도구 호출형 assistant 동작 보존
+
+## 한국어 사용법
+
+가중치 업로드 후 아래처럼 사용할 수 있습니다.
+
+### Transformers 사용
+
+```python
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL"
+
+tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+    trust_remote_code=True,
+)
+
+messages = [
+    {"role": "system", "content": "너는 한국어로 정확하고 간결하게 답하는 어시스턴트다."},
+    {"role": "user", "content": "상법상 이사의 충실의무를 실무 관점에서 설명해줘."},
+]
+
+prompt = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True,
+)
+inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+with torch.no_grad():
+    output = model.generate(
+        **inputs,
+        max_new_tokens=512,
+        temperature=0.5,
+        top_p=0.9,
+        do_sample=True,
+    )
+
+print(tokenizer.decode(output[0], skip_special_tokens=False))
+```
+
+### vLLM 사용
+
+```bash
+vllm serve LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL \
+  --trust-remote-code \
+  --dtype bfloat16 \
+  --max-model-len 8192 \
+  --tensor-parallel-size 8
+```
+
+요청 예시:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+
+response = client.chat.completions.create(
+    model="LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL",
+    messages=[
+        {"role": "system", "content": "너는 한국어로 정확하고 간결하게 답하는 어시스턴트다."},
+        {"role": "user", "content": "부동산 임대차 계약에서 보증금 반환 분쟁의 핵심 쟁점을 정리해줘."},
+    ],
+    temperature=0.5,
+    max_tokens=512,
+)
+
+print(response.choices[0].message.content)
+```
+
+### Colab 사용 예시
+
+일반 Colab GPU에서는 VRAM 부족을 피하려고 4-bit 로딩부터 쓰는 것이 좋습니다.
+
+```python
+!pip install -U "transformers>=4.44" accelerate bitsandbytes sentencepiece huggingface_hub
+```
+
+```python
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+model_id = "LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL"
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16,
+    bnb_4bit_use_double_quant=True,
+)
+
+tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    quantization_config=bnb_config,
+    device_map="auto",
+    trust_remote_code=True,
+)
+
+messages = [
+    {"role": "system", "content": "너는 한국어로 정확하고 간결하게 답하는 어시스턴트다."},
+    {"role": "user", "content": "한국 금융시장에서 기준금리와 채권 가격의 관계를 설명해줘."},
+]
+
+prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+with torch.no_grad():
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=512,
+        temperature=0.5,
+        top_p=0.9,
+        do_sample=True,
+    )
+
+print(tokenizer.decode(outputs[0], skip_special_tokens=False))
+```
+
+### 권장 생성 설정
+
+- 법률/금융 설명: `temperature=0.3-0.6`, `top_p=0.8-0.95`
+- 일반 한국어 답변: `temperature=0.5-0.8`, `top_p=0.9`
+- 긴 문서 요약: `max_new_tokens=1024` 이상
+- 도구 사용/구조화 출력: 낮은 temperature 권장
+
+## 한국어 학습 설정
+
+- 베이스 모델: `LiquidAI/LFM2.5-8B-A1B`
+- 방식: full-parameter CPT, LoRA 아님
+- 하드웨어: NVIDIA H200 8장
+- 컨텍스트 길이: 8192
+- GPU당 batch size: 2
+- gradient accumulation: 4
+- effective batch: 64 sequences/update
+- update당 최대 token: 524,288
+- learning rate: 2e-5
+- epoch: 1
+- `max_steps`: -1
+- 저장 간격: 1,000 steps
+- checkpoint 보존: 최신 4개와 final model
+
+학습 규모:
+
+- 전체 row: 4,622,971
+- 추정 token: 6.49B
+- 예상 step: 12,384
+- 예상 시간: 약 12-15.5시간
 
 ## Evaluation Plan
 
-Primary public Korean evaluations:
+Primary public Korean benchmarks:
 
 - KMMLU: https://huggingface.co/datasets/HAERAE-HUB/KMMLU
 - KMMLU-Pro: https://huggingface.co/datasets/LGAI-EXAONE/KMMLU-Pro
@@ -99,6 +449,4 @@ Secondary checks:
 - Korean wiki QA/summarization holdout
 - Terminal/tool-use smoke tests
 
-## Status
-
-The full corpus is prepared. Training artifacts and benchmark results will be uploaded after the first completed full CPT run.
+Benchmark results will be added after training and evaluation.
