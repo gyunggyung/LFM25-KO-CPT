@@ -11,6 +11,11 @@ LOG_DIR="${LOG_DIR:-$ROOT_DIR/lfm2_ko_cpt/logs/20260627_full_lfmstyle_watcher}"
 
 mkdir -p "$LOG_DIR"
 
+if [ "${WATCHER_LOGGING_ACTIVE:-0}" != "1" ]; then
+  export WATCHER_LOGGING_ACTIVE=1
+  exec > >(tee -a "$LOG_DIR/watch.log") 2>&1
+fi
+
 echo "watcher_start $(date -u '+%F %T UTC')"
 while [ ! -s "$FULL_STATS" ] || [ ! -s "$FULL_MIX" ]; do
   ls -lh "$FULL_MIX" "$FULL_STATS" 2>/dev/null || true
