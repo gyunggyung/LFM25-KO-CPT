@@ -26,7 +26,7 @@ Prepared Korean continued-pretraining data for `LLM-OS-Models/LFM2.5-8B-A1B-KO-C
 - `metadata/ko_cpt_mix_full_lfmstyle_20260627.stats.json`: corpus statistics
 - `metadata/ko_cpt_mix_full_lfmstyle_20260627.stats.json.full_report.json`: per-source preprocessing report
 - `metadata/ko_cpt_sources_full_20260627.json`: source configuration
-- `tokenized/`: packed tokenized blocks will be uploaded after generation
+- `tokenized/tokenized_lfm25_8k_20260628/`: packed 8192-token Parquet blocks will be uploaded after generation
 
 ## Corpus Statistics
 
@@ -36,6 +36,7 @@ Prepared Korean continued-pretraining data for `LLM-OS-Models/LFM2.5-8B-A1B-KO-C
 - Target tokenizer/model: `LiquidAI/LFM2.5-8B-A1B`
 - Target sequence length: 8192
 - Estimated packed training steps at effective batch 64: 12,384
+- Tokenized export format: Parquet shards with `input_ids` and `length`
 
 ## Format
 

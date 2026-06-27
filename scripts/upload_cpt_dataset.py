@@ -33,8 +33,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-id", default="LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-DATA")
     parser.add_argument("--root-dir", default="/home/work/.projects/LLM-OS-Models/Terminal")
     parser.add_argument("--data-root", default="/home/work/.data/lfm2_ko_cpt/datasets")
+    parser.add_argument("--tokenized-dir", default="/home/work/.data/lfm2_ko_cpt/datasets/tokenized_lfm25_8k_20260628")
     parser.add_argument("--private", action="store_true")
     parser.add_argument("--skip-corpus", action="store_true")
+    parser.add_argument("--skip-tokenized", action="store_true")
     return parser.parse_args()
 
 
@@ -95,6 +97,16 @@ def main() -> None:
             data_root / "ko_cpt_mix_full_lfmstyle_20260627.jsonl",
             "data/ko_cpt_mix_full_lfmstyle_20260627.jsonl",
             "Add prepared full LFM-style CPT corpus",
+        )
+    tokenized_dir = Path(args.tokenized_dir)
+    if not args.skip_tokenized and tokenized_dir.exists():
+        print(f"uploading folder {tokenized_dir} -> tokenized/{tokenized_dir.name}", flush=True)
+        api.upload_folder(
+            folder_path=str(tokenized_dir),
+            path_in_repo=f"tokenized/{tokenized_dir.name}",
+            repo_id=args.repo_id,
+            repo_type="dataset",
+            commit_message="Add packed tokenized LFM2.5 CPT artifacts",
         )
 
     info = api.dataset_info(args.repo_id)
