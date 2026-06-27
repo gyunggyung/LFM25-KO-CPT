@@ -13,7 +13,7 @@ mkdir -p "$WORK_DIR/logs"
 
 echo "watch_start_kst=$(TZ=Asia/Seoul date '+%F %T KST')" | tee -a "$EXPORT_LOG"
 while true; do
-  if [ -f "$TRAIN_LOG" ] && grep -Eq 'Total optimization steps|Num Epochs|Num examples' "$TRAIN_LOG"; then
+  if [ -f "$TRAIN_LOG" ] && grep -Eq "'loss':|\"loss\":|loss.*learning_rate" "$TRAIN_LOG"; then
     break
   fi
   if [ -f "$TRAIN_LOG" ] && grep -Eq 'Traceback|CUDA out of memory|RuntimeError|Error' "$TRAIN_LOG"; then
