@@ -59,8 +59,8 @@
       "id": "lfm25_terminal_toolbench_hrm_turns_v1",
       "path": "/home/work/.data/hrm_text_raw_sft/lfm25_terminal_toolbench_hrm_turns_v1.jsonl",
       "category": "tool_agentic",
-      "kind": "agent_text"
+      "kind": "agent_text",
+      "min_hangul_ratio": 0.0
     }
   ]
 }
-

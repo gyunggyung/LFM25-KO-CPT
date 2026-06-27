@@ -49,7 +49,7 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - `ko_legal_rag_agent_sft_round15_v2`: 749 rows, 7,656,157 chars
 - `current_law_bar_json_answer_sft_20260621`: 2,000 rows, 4,693,801 chars
 
-남은 소스는 terminal/toolbench 계열 1개다.
+2026-06-27 23:58 KST에 `lfm25_terminal_toolbench_hrm_turns_v1`가 0건으로 처리된 것을 확인했다. 원인은 영어 terminal/tool 데이터가 전역 한국어 비율 필터에 걸린 것이다. `configs/ko_cpt_sources_full_20260627.json`에서 해당 source만 `min_hangul_ratio: 0.0`으로 낮추고, `scripts/build_ko_cpt_mix_parallel.py`에 source별 filter override를 추가했다. terminal/toolbench shard만 지우고 재처리한 뒤 full mix를 다시 merge해야 한다.
 
 ## 현재 GPU 학습 상태
 

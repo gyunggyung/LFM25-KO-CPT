@@ -188,6 +188,9 @@ def process_source(source: dict[str, Any], index: int, shard_dir: str, args_dict
     category = source.get("category", "unknown")
     source_kind = source.get("kind", "raw_text")
     path = Path(source["path"])
+    min_chars = int(source.get("min_chars", args_dict["min_chars"]))
+    max_chars = int(source.get("max_chars", args_dict["max_chars"]))
+    min_hangul_ratio = float(source.get("min_hangul_ratio", args_dict["min_hangul_ratio"]))
     safe_id = re.sub(r"[^A-Za-z0-9_.-]+", "_", source_id)
     shard_path = Path(shard_dir) / f"{index:03d}_{safe_id}.jsonl"
     stats_path = shard_path.with_suffix(".stats.json")
@@ -205,6 +208,9 @@ def process_source(source: dict[str, Any], index: int, shard_dir: str, args_dict
         stats["missing"] += 1
         stats_doc = dict(stats)
         stats_doc["shard_path"] = str(shard_path)
+        stats_doc["filter_min_chars"] = min_chars
+        stats_doc["filter_max_chars"] = max_chars
+        stats_doc["filter_min_hangul_ratio"] = min_hangul_ratio
         stats_path.write_text(json.dumps(stats_doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return stats_doc
 
@@ -212,11 +218,11 @@ def process_source(source: dict[str, Any], index: int, shard_dir: str, args_dict
     with tmp_path.open("w", encoding="utf-8") as out:
         for row in source_iter(path):
             stats["read"] += 1
-            text = extract_record_text(row, source_kind, args_dict["max_chars"])
-            if len(text) < args_dict["min_chars"]:
+            text = extract_record_text(row, source_kind, max_chars)
+            if len(text) < min_chars:
                 stats["too_short"] += 1
                 continue
-            if hangul_ratio(text) < args_dict["min_hangul_ratio"]:
+            if min_hangul_ratio > 0 and hangul_ratio(text) < min_hangul_ratio:
                 stats["low_hangul_ratio"] += 1
                 continue
             digest = hashlib.sha1(text.encode("utf-8", errors="ignore")).hexdigest()
@@ -231,6 +237,9 @@ def process_source(source: dict[str, Any], index: int, shard_dir: str, args_dict
     tmp_path.replace(shard_path)
     stats_doc = dict(stats)
     stats_doc["shard_path"] = str(shard_path)
+    stats_doc["filter_min_chars"] = min_chars
+    stats_doc["filter_max_chars"] = max_chars
+    stats_doc["filter_min_hangul_ratio"] = min_hangul_ratio
     stats_path.write_text(json.dumps(stats_doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return stats_doc
 
@@ -332,4 +341,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
