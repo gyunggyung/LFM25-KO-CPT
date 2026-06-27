@@ -28,6 +28,7 @@ echo "training_steps_detected_kst=$(TZ=Asia/Seoul date '+%F %T KST')" | tee -a "
 cd "$ROOT_DIR"
 nice -n 10 ionice -c2 -n7 "$VENV/bin/python" lfm2_ko_cpt/scripts/export_lfm25_tokenized_dataset.py \
   --out-dir "$OUT_DIR" \
+  --overwrite \
   >> "$EXPORT_LOG" 2>&1
 
 echo "tokenized_upload_start_kst=$(TZ=Asia/Seoul date '+%F %T KST')" | tee -a "$UPLOAD_LOG"
