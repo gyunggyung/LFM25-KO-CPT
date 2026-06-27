@@ -1,12 +1,19 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-27 23:56 KST
+최종 갱신: 2026-06-28 00:25 KST
 작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
 ## 현재 목표
 
 `LiquidAI/LFM2.5-8B-A1B`를 한국어 위키/법률/금융/도구 데이터로 full-parameter CPT해서 `LFM2.5-8B-A1B-KO` 계열 모델을 만든다. 현재는 full corpus 전처리가 최우선이고, GPU에서는 seed corpus로 full FT 설정을 검증하는 practice run이 돌고 있다.
+
+2026-06-28 00:22 KST 기준 full corpus 1 epoch 본 학습을 시작했다. practice run은 중단했고, 현재 run은 LoRA가 아닌 full-parameter CPT다.
+
+HF repo:
+
+- https://huggingface.co/LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL
+- README/model card upload sha: `629449c54f45594f1f8f9aa28573e52a8b823f5f`
 
 ## 실행 중인 세션
 
@@ -19,9 +26,7 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 
 현재 tmux 세션:
 
-- `lfm2_ko_cpt_full_lfmstyle_parallel_20260627`: CPU 병렬 full corpus 전처리
-- `lfm2_ko_cpt_full_seed_practice_20260627`: H200 8GPU full FT practice run
-- `lfm2_ko_cpt_full_lfmstyle_watcher_20260627`: full corpus 생성 및 practice 종료 후 본 run 자동 시작
+- `lfm2_ko_cpt_full_lfmstyle_20260627`: H200 8GPU full-parameter CPT 본 학습
 
 ## 전처리 상태
 
@@ -31,11 +36,14 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - stats: `/home/work/.data/lfm2_ko_cpt/datasets/ko_cpt_mix_full_lfmstyle_20260627.stats.json`
 - shards: `/home/work/.data/lfm2_ko_cpt/datasets/shards_full_lfmstyle_20260627`
 
-2026-06-27 23:55 KST 기준:
+최종 full mix:
 
-- shard size: 약 `20G`
-- 완료 소스: `9/10`
-- 예상 full merge 완료: 2026-06-28 00:20-00:35 KST
+- path: `/home/work/.data/lfm2_ko_cpt/datasets/ko_cpt_mix_full_lfmstyle_20260627.jsonl`
+- file size: 약 `20G`
+- rows after global deduplication: `4,622,971`
+- chars: `11,581,567,658`
+- estimated tokens: `6,492,697,020`
+- estimated training steps: `12,384`
 
 완료된 소스:
 
@@ -49,28 +57,28 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - `ko_legal_rag_agent_sft_round15_v2`: 749 rows, 7,656,157 chars
 - `current_law_bar_json_answer_sft_20260621`: 2,000 rows, 4,693,801 chars
 
-2026-06-27 23:58 KST에 `lfm25_terminal_toolbench_hrm_turns_v1`가 0건으로 처리된 것을 확인했다. 원인은 영어 terminal/tool 데이터가 전역 한국어 비율 필터에 걸린 것이다. `configs/ko_cpt_sources_full_20260627.json`에서 해당 source만 `min_hangul_ratio: 0.0`으로 낮추고, `scripts/build_ko_cpt_mix_parallel.py`에 source별 filter override를 추가했다. terminal/toolbench shard만 지우고 재처리한 뒤 full mix를 다시 merge해야 한다.
+2026-06-27 23:58 KST에 `lfm25_terminal_toolbench_hrm_turns_v1`가 0건으로 처리된 것을 확인했다. 원인은 영어 terminal/tool 데이터가 전역 한국어 비율 필터에 걸린 것이다. `configs/ko_cpt_sources_full_20260627.json`에서 해당 source만 `min_hangul_ratio: 0.0`으로 낮추고, `scripts/build_ko_cpt_mix_parallel.py`에 source별 filter override를 추가했다. 재처리 결과 terminal/toolbench는 `326,785` rows가 포함됐다.
 
 ## 현재 GPU 학습 상태
 
-세션: `lfm2_ko_cpt_full_seed_practice_20260627`
+세션: `lfm2_ko_cpt_full_lfmstyle_20260627`
 
-Practice run 목적:
+본 run 목적:
 
-- full-parameter CPT가 실제로 8GPU에서 도는지 확인
-- batch/VRAM/step speed/checkpoint 저장 확인
-- full corpus가 완성되기 전 GPU 공백을 줄이는 연습 run
+- full corpus 1 epoch CPT
+- LFM2.5-8B-A1B 한국어 법률/금융/위키/도구 동작 강화
+- LoRA가 아닌 full-parameter finetuning
 
 데이터:
 
 ```text
-/home/work/.data/lfm2_ko_cpt/datasets/ko_cpt_mix_seed_20260627.jsonl
+/home/work/.data/lfm2_ko_cpt/datasets/ko_cpt_mix_full_lfmstyle_20260627.jsonl
 ```
 
 출력:
 
 ```text
-/home/work/.data/lfm2_ko_cpt/models/LFM2.5-8B-A1B-KO-CPT-FULL-20260627_lfm25_8b_ko_cpt_full_seed_practice
+/home/work/.data/lfm2_ko_cpt/models/LFM2.5-8B-A1B-KO-CPT-FULL-20260628_lfm25_8b_ko_cpt_full_lfmstyle
 ```
 
 설정:
@@ -81,22 +89,23 @@ Practice run 목적:
 - `gradient_accumulation_steps=4`
 - effective batch: `64 sequences/update`
 - 최대 token/update: 약 `64 * 8192 = 524,288 tokens`
-- `max_steps=500`
+- `max_steps=-1`
+- `num_train_epochs=1`
 - `learning_rate=2e-5`
-- `save_steps=25`
+- `save_steps=1000`
 - `save_total_limit=4`
 
-2026-06-27 23:53 KST 기준 GPU:
+2026-06-28 00:25 KST 기준:
 
-- H200 8장 모두 사용 중
-- VRAM: 각 GPU 약 `85-87GB / 143GB`
-- utilization: 대부분 `99-100%`
+- 모델 로딩 완료 후 full corpus tokenization 진행 중
+- GPU VRAM: 각 GPU 약 `20-22GB / 143GB`
+- 아직 optimizer/training step 전이라 GPU util은 낮을 수 있음
 
 속도:
 
-- 체크포인트 저장 구간 제외: 약 `3.33-3.45 sec/step`
-- 25 step마다 model shard 저장 때문에 약 37-40초 추가 지연
-- checkpoint 저장 후 다시 3.3초대 step으로 복귀
+- practice 기준 체크포인트 저장 제외 약 `3.35-3.45 sec/step`
+- full corpus는 tokenization/packing 이후 step 속도를 다시 확인해야 함
+- 총 예상 runtime은 약 `12-15.5h`
 
 ## Watcher 동작
 
