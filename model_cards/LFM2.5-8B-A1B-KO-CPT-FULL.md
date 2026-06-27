@@ -286,6 +286,15 @@ Legalize-KR links:
 
 The Legalize-KR organization describes its project as converting Korean statutes, precedents, administrative rules, and local ordinances into Markdown and Git history. Its README states that source data is obtained from the National Law Information Center OpenAPI and transformed into Git repositories. Long-term reproducibility should pin a snapshot or release where possible because Legalize-KR notes that Git history can be reconstructed when parsing and normalization rules improve.
 
+Recommended attribution format:
+
+- Statutes: cite `legalize-kr/legalize-kr`, the Markdown path such as `kr/{statute-name}/{statute-type}.md`, and stable metadata fields such as `법령ID`, `법령MST`, promulgation date, effective date, and the `출처` URL from `law.go.kr`.
+- Precedents: cite `legalize-kr/precedent-kr`, the Markdown path such as `{case-type}/{court-level}/{court}_{decision-date}_{case-number}.md`, and stable identifiers such as `판례일련번호`, court name, decision date, and case number.
+- Administrative rules: cite `legalize-kr/admrule-kr`, the Markdown path such as `{agency-path}/{rule-type}/{rule-name}/본문.md`, plus rule serial number or issuing number when available.
+- Local ordinances: cite `legalize-kr/ordinance-kr`, the Markdown path such as `{province}/{city-or-office}/{ordinance-type}/{ordinance-name}/본문.md`, plus `자치법규ID`, `자치법규일련번호`, promulgation date, promulgation number, and the `출처` URL.
+- Avoid using only Git commit hashes as long-term identifiers because Legalize-KR warns that repository history may be reconstructed after parser or normalization improvements.
+- License note from the Legalize-KR READMEs: original legal text is Korean government public work; repository structure and metadata are MIT where specified by the repository.
+
 Local legal sources included in this CPT run:
 
 - `korean_legal_raw_full_20260523`
@@ -474,6 +483,15 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=False))
 - 원천 공공 법령 출처: https://www.law.go.kr
 
 Legalize-KR은 법령/판례/행정규칙/자치법규를 Markdown과 Git 이력으로 관리하는 공개 프로젝트다. 조직 README 기준 원천 데이터는 국가법령정보센터 OpenAPI에서 가져오며, 파싱과 정규화 규칙이 개선되면 Git 이력이 재구성될 수 있으므로 장기 재현에는 snapshot 또는 release 고정이 필요하다.
+
+출처 표기 방식:
+
+- 법령: `legalize-kr/legalize-kr` 저장소, `kr/{법령명}/{법령구분}.md` 경로, `법령ID`, `법령MST`, `공포일자`, `시행일자`, `출처` URL을 함께 적는다.
+- 판례: `legalize-kr/precedent-kr` 저장소, `{사건종류}/{법원등급}/{법원명}_{선고일자}_{사건번호}.md` 경로, `판례일련번호`, 법원명, 선고일자, 사건번호를 함께 적는다.
+- 행정규칙: `legalize-kr/admrule-kr` 저장소, `{기관경로}/{행정규칙종류}/{행정규칙명}/본문.md` 경로, 행정규칙일련번호 또는 발령번호를 함께 적는다.
+- 자치법규: `legalize-kr/ordinance-kr` 저장소, `{광역}/{기초 또는 _본청 또는 _교육청}/{자치법규종류}/{자치법규명}/본문.md` 경로, `자치법규ID`, `자치법규일련번호`, `공포일자`, `공포번호`, `출처` URL을 함께 적는다.
+- commit hash만 장기 출처로 쓰지 않는다. Legalize-KR README는 파서/정규화 개선 시 저장소 history가 재구성될 수 있다고 안내한다.
+- Legalize-KR README 기준 원문은 대한민국 정부 공공저작물이고, 저장소 구조와 메타데이터는 저장소별 MIT 표기를 따른다.
 
 ## Evaluation Plan
 
