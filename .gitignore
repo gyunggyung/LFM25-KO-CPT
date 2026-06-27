@@ -1,0 +1,6 @@
+data_refs/LLM-Ko-Datasets/
+logs/
+__pycache__/
+*.pyc
+.DS_Store
+

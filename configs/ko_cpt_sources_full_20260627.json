@@ -1,0 +1,66 @@
+{
+  "description": "Full Korean CPT mix for LiquidAI/LFM2.5-8B-A1B-KO. Processes all rows from the selected local Korean corpora; no per-source document cap.",
+  "sources": [
+    {
+      "id": "kowiki_raw_full_20260524",
+      "path": "/home/work/.data/huggingface/hrm_text_extra/sft/kowiki_raw_full_20260524.jsonl",
+      "category": "wiki",
+      "kind": "raw_text"
+    },
+    {
+      "id": "bcai_finance_kor_hrm_20260524",
+      "path": "/home/work/.data/huggingface/hrm_text_extra/finance/bcai_finance_kor_hrm_20260524.jsonl",
+      "category": "finance",
+      "kind": "domain_text"
+    },
+    {
+      "id": "BCAI-Finance-Kor-1862K",
+      "path": "/home/work/.data/huggingface/hrm_text_extra/finance/BCAI-Finance-Kor-1862K/bc-finance-kor.jsonl",
+      "category": "finance",
+      "kind": "domain_text"
+    },
+    {
+      "id": "korean_legal_raw_full_20260523",
+      "path": "/home/work/.data/huggingface/hrm_text_extra/sft/korean_legal_raw_full_20260523.jsonl",
+      "category": "legal",
+      "kind": "domain_text"
+    },
+    {
+      "id": "korean_legal_tasks_full_20260524",
+      "path": "/home/work/.data/huggingface/hrm_text_extra/sft/korean_legal_tasks_full_20260524.jsonl",
+      "category": "legal",
+      "kind": "instruction_as_text"
+    },
+    {
+      "id": "korean_admrule_precedent_raw_full_20260524",
+      "path": "/home/work/.data/huggingface/hrm_text_extra/sft/korean_admrule_precedent_raw_full_20260524.jsonl",
+      "category": "legal",
+      "kind": "domain_text"
+    },
+    {
+      "id": "ko_legal_source_agent_sft_20260621",
+      "path": "/home/work/.data/harness1/ko_legal_source_rag/source_rag_balanced_20260621_v1/ko_legal_source_agent_sft.jsonl",
+      "category": "legal_rag",
+      "kind": "agent_text"
+    },
+    {
+      "id": "ko_legal_rag_agent_sft_round15_v2",
+      "path": "/home/work/.data/harness1/ko_legal_rag/round15_v2_20260619/ko_legal_rag_agent_sft.jsonl",
+      "category": "legal_rag",
+      "kind": "agent_text"
+    },
+    {
+      "id": "current_law_bar_json_answer_sft_20260621",
+      "path": "/home/work/.data/harness1/ko_legal_source_rag/current_law_bar_json_answer_sft_20260621.jsonl",
+      "category": "legal_bar",
+      "kind": "instruction_as_text"
+    },
+    {
+      "id": "lfm25_terminal_toolbench_hrm_turns_v1",
+      "path": "/home/work/.data/hrm_text_raw_sft/lfm25_terminal_toolbench_hrm_turns_v1.jsonl",
+      "category": "tool_agentic",
+      "kind": "agent_text"
+    }
+  ]
+}
+
