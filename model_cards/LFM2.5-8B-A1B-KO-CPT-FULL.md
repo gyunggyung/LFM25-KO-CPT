@@ -37,6 +37,7 @@ This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-st
 - [Colab Example](#colab-example)
 - [Training Configuration](#training-configuration)
 - [Data Mix](#data-mix)
+- [Legal Data Attribution](#legal-data-attribution)
 - [Korean](#korean)
 - [한국어 사용법](#한국어-사용법)
 - [한국어 학습 설정](#한국어-학습-설정)
@@ -268,6 +269,32 @@ Per-source rows:
 
 Raw Korean wiki/legal/finance documents are kept as plain completion text for CPT. Instruction, legal RAG, and terminal/tool-use examples are converted to LFM ChatML-style text.
 
+## Legal Data Attribution
+
+Legal-domain data is attributed to the public Legalize-KR ecosystem and related Korean legal source corpora used in the local CPT mix.
+
+Legalize-KR links:
+
+- Organization: https://github.com/legalize-kr
+- Korean statutes repository: https://github.com/legalize-kr/legalize-kr
+- Korean court precedent repository: https://github.com/legalize-kr/precedent-kr
+- Korean administrative rules repository: https://github.com/legalize-kr/admrule-kr
+- Korean local ordinance repository: https://github.com/legalize-kr/ordinance-kr
+- Data collection/conversion pipeline: https://github.com/legalize-kr/legalize-pipeline
+- Legalize-KR website: https://legalize.kr
+- Original public legal source: https://www.law.go.kr
+
+The Legalize-KR organization describes its project as converting Korean statutes, precedents, administrative rules, and local ordinances into Markdown and Git history. Its README states that source data is obtained from the National Law Information Center OpenAPI and transformed into Git repositories. Long-term reproducibility should pin a snapshot or release where possible because Legalize-KR notes that Git history can be reconstructed when parsing and normalization rules improve.
+
+Local legal sources included in this CPT run:
+
+- `korean_legal_raw_full_20260523`
+- `korean_legal_tasks_full_20260524`
+- `korean_admrule_precedent_raw_full_20260524`
+- `ko_legal_source_agent_sft_20260621`
+- `ko_legal_rag_agent_sft_round15_v2`
+- `current_law_bar_json_answer_sft_20260621`
+
 ## Korean
 
 `LFM2.5-8B-A1B-KO-CPT-FULL`은 LoRA 어댑터가 아니라 full-parameter CPT 모델입니다. 목표는 LFM2.5-8B-A1B에 한국어 법률, 금융, 위키 지식과 터미널/도구 사용 스타일을 계속 사전학습으로 이식하는 것입니다.
@@ -432,6 +459,21 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=False))
 - 추정 token: 6.49B
 - 예상 step: 12,384
 - 예상 시간: 약 12-15.5시간
+
+### 한국어 법률 데이터 출처
+
+법률 도메인 데이터 출처는 Legalize-KR 생태계와 로컬 한국 법률 corpus를 명시한다.
+
+- Legalize-KR 조직: https://github.com/legalize-kr
+- 대한민국 법령: https://github.com/legalize-kr/legalize-kr
+- 대한민국 판례: https://github.com/legalize-kr/precedent-kr
+- 대한민국 행정규칙: https://github.com/legalize-kr/admrule-kr
+- 대한민국 자치법규: https://github.com/legalize-kr/ordinance-kr
+- 수집/변환 파이프라인: https://github.com/legalize-kr/legalize-pipeline
+- Legalize-KR 웹사이트: https://legalize.kr
+- 원천 공공 법령 출처: https://www.law.go.kr
+
+Legalize-KR은 법령/판례/행정규칙/자치법규를 Markdown과 Git 이력으로 관리하는 공개 프로젝트다. 조직 README 기준 원천 데이터는 국가법령정보센터 OpenAPI에서 가져오며, 파싱과 정규화 규칙이 개선되면 Git 이력이 재구성될 수 있으므로 장기 재현에는 snapshot 또는 release 고정이 필요하다.
 
 ## Evaluation Plan
 
