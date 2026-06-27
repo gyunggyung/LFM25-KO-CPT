@@ -6,8 +6,13 @@ This folder contains the Korean CPT workflow for `LiquidAI/LFM2.5-8B-A1B`.
 - Evaluation plan: `docs/LFM2_KO_EVAL_PLAN_20260627.ko.md`
 - Data mix config: `configs/ko_cpt_sources_20260627.json`
 - Data builder: `scripts/build_ko_cpt_mix.py`
+- Parallel LFM-style full data builder: `scripts/build_ko_cpt_mix_parallel.py`
 - 8GPU LoRA CPT trainer: `scripts/train_lfm25_ko_cpt_lora.py`
+- 8GPU full-parameter CPT trainer: `scripts/train_lfm25_ko_cpt_full.py`
 - Runner: `scripts/run_lfm25_8b_ko_cpt_lora.sh`
+- Full FT runner: `scripts/run_lfm25_8b_ko_cpt_full.sh`
+- Watch full preprocess then train: `scripts/watch_full_preprocess_then_train.sh`
+- Status: `scripts/status_lfm2_ko_cpt.sh`
 - HF upload helper: `scripts/upload_latest_lora.py`
 
 Default artifact root:

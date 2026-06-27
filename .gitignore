@@ -1,6 +1,6 @@
 data_refs/LLM-Ko-Datasets/
 logs/
+unsloth_compiled_cache/
 __pycache__/
 *.pyc
 .DS_Store
-
