@@ -3,6 +3,7 @@
 This folder contains the Korean CPT workflow for `LiquidAI/LFM2.5-8B-A1B`.
 
 - Runbook: `docs/LFM2_KO_CPT_RUNBOOK_20260627.ko.md`
+- Current status / handoff: `docs/CURRENT_STATUS_20260627.ko.md`
 - Evaluation plan: `docs/LFM2_KO_EVAL_PLAN_20260627.ko.md`
 - Data mix config: `configs/ko_cpt_sources_20260627.json`
 - Data builder: `scripts/build_ko_cpt_mix.py`
@@ -18,3 +19,10 @@ This folder contains the Korean CPT workflow for `LiquidAI/LFM2.5-8B-A1B`.
 Default artifact root:
 
 `/home/work/.data/lfm2_ko_cpt`
+
+Quick status:
+
+```bash
+cd /home/work/.projects/LLM-OS-Models/Terminal
+bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
+```
