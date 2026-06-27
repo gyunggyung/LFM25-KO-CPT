@@ -115,8 +115,9 @@ Practice run 목적:
 - `per_device_train_batch_size=2`
 - `gradient_accumulation_steps=4`
 - `max_seq_length=8192`
-- `max_steps=8000`
-- `save_steps=100`
+- `max_steps=-1`
+- `num_train_epochs=1`
+- `save_steps=1000`
 - `learning_rate=2e-5`
 
 수동 시작이 필요하면:
@@ -124,7 +125,7 @@ Practice run 목적:
 ```bash
 cd /home/work/.projects/LLM-OS-Models/Terminal
 tmux new-session -d -s lfm2_ko_cpt_full_lfmstyle_20260627 \
-  'RUN_ID=20260627_lfm25_8b_ko_cpt_full_lfmstyle MIX_PATH=/home/work/.data/lfm2_ko_cpt/datasets/ko_cpt_mix_full_lfmstyle_20260627.jsonl PER_DEVICE_TRAIN_BATCH_SIZE=2 GRADIENT_ACCUMULATION_STEPS=4 MAX_SEQ_LENGTH=8192 MAX_STEPS=8000 SAVE_STEPS=100 LEARNING_RATE=0.00002 bash lfm2_ko_cpt/scripts/run_lfm25_8b_ko_cpt_full.sh'
+  'RUN_ID=20260627_lfm25_8b_ko_cpt_full_lfmstyle MIX_PATH=/home/work/.data/lfm2_ko_cpt/datasets/ko_cpt_mix_full_lfmstyle_20260627.jsonl PER_DEVICE_TRAIN_BATCH_SIZE=2 GRADIENT_ACCUMULATION_STEPS=4 MAX_SEQ_LENGTH=8192 MAX_STEPS=-1 NUM_TRAIN_EPOCHS=1 SAVE_STEPS=1000 LEARNING_RATE=0.00002 bash lfm2_ko_cpt/scripts/run_lfm25_8b_ko_cpt_full.sh'
 ```
 
 ## 중단과 재개

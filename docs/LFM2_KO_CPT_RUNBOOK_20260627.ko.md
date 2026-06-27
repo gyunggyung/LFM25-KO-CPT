@@ -106,8 +106,8 @@ cd /home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt
   - grad accumulation 4
   - effective batch sequence 64
   - 8192 기준 update당 약 52만 token
-- 기본 step: 3000
-- 저장: 50 step마다 checkpoint, 최대 4개 보존
+- full 본 run: `max_steps=-1`, `num_train_epochs=1`
+- 저장: 1000 step마다 checkpoint, 최대 4개 보존
 - 재개: `RESUME_FROM_CHECKPOINT=auto`
 
 현재 practice run:

@@ -64,9 +64,9 @@ torchrun \
     --per-device-train-batch-size "${PER_DEVICE_TRAIN_BATCH_SIZE:-2}" \
     --gradient-accumulation-steps "${GRADIENT_ACCUMULATION_STEPS:-4}" \
     --learning-rate "${LEARNING_RATE:-0.00002}" \
-    --max-steps "${MAX_STEPS:-3000}" \
+    --max-steps "${MAX_STEPS:--1}" \
     --num-train-epochs "${NUM_TRAIN_EPOCHS:-1}" \
-    --save-steps "${SAVE_STEPS:-50}" \
+    --save-steps "${SAVE_STEPS:-1000}" \
     --save-total-limit "${SAVE_TOTAL_LIMIT:-4}" \
     --logging-steps "${LOGGING_STEPS:-1}" \
     --dataset-num-proc "${DATASET_NUM_PROC:-24}" \
@@ -74,4 +74,3 @@ torchrun \
     "${RESUME_ARG[@]}" \
     "${PUSH_ARGS[@]}" \
     2>&1 | tee "$LOG_DIR/train.log"
-
