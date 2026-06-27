@@ -1,7 +1,7 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-27 23:54 KST  
-작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`  
+최종 갱신: 2026-06-27 23:56 KST
+작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
 ## 현재 목표
@@ -31,10 +31,10 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - stats: `/home/work/.data/lfm2_ko_cpt/datasets/ko_cpt_mix_full_lfmstyle_20260627.stats.json`
 - shards: `/home/work/.data/lfm2_ko_cpt/datasets/shards_full_lfmstyle_20260627`
 
-2026-06-27 23:53 KST 기준:
+2026-06-27 23:55 KST 기준:
 
-- shard size: 약 `19G`
-- 완료 소스: `7/10`
+- shard size: 약 `20G`
+- 완료 소스: `9/10`
 - 예상 full merge 완료: 2026-06-28 00:20-00:35 KST
 
 완료된 소스:
@@ -43,11 +43,13 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - `korean_legal_raw_full_20260523`: 227,687 rows, 789,324,880 chars
 - `korean_legal_tasks_full_20260524`: 1,383,340 rows, 1,813,366,700 chars
 - `korean_admrule_precedent_raw_full_20260524`: 203,477 rows, 719,804,895 chars
+- `bcai_finance_kor_hrm_20260524`: 1,861,531 rows, 2,414,230,984 chars
+- `BCAI-Finance-Kor-1862K`: 1,861,531 rows, 2,414,230,984 chars
 - `ko_legal_source_agent_sft_20260621`: 5,999 rows, 60,652,338 chars
 - `ko_legal_rag_agent_sft_round15_v2`: 749 rows, 7,656,157 chars
 - `current_law_bar_json_answer_sft_20260621`: 2,000 rows, 4,693,801 chars
 
-남은 큰 소스는 금융 2개와 terminal/toolbench 계열이다.
+남은 소스는 terminal/toolbench 계열 1개다.
 
 ## 현재 GPU 학습 상태
 
@@ -160,6 +162,7 @@ git status --short
 
 - `fa1d20c Add LFM2 Korean CPT workflow`
 - `0efd4a7 Add full CPT training and parallel preprocessing workflow`
+- `44e9d28 Document current LFM2 KO CPT status`
 
 주요 문서:
 
