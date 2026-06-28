@@ -2,6 +2,8 @@
 
 작성일: 2026-06-27
 
+실행용 vLLM runbook은 `docs/LFM2_KO_VLLM_EVAL_RUNBOOK_20260628.ko.md`에 있다. 학습 완료 전에는 GPU 평가를 시작하지 않는다.
+
 ## 방향
 
 LFM2.5 JP 모델 카드가 일본어 모델 성능을 `JMMLU-ProX`, `JMMLU`, `JCulture`, `JGPQA`, `J-MIFEval`, `JFBench`, `J-GSM8K`, `J-MATH500`, `JHumanEval+`, `J-BFCLv3`로 보여준 것처럼, KO 모델도 공개 한국어 벤치마크를 중심으로 before/after 표를 만든다.
@@ -57,4 +59,3 @@ LFM2.5 JP 모델 카드가 일본어 모델 성능을 `JMMLU-ProX`, `JMMLU`, `JC
 - full CPT: 원천 데이터 전체 처리 후 약 `4~6B tokens` 예상
 - H200 8대에서 full CPT는 checkpoint resume 방식으로 이어간다.
 - VRAM 목표: 안정 step 확인 후 per-device batch를 `4 -> 6 -> 8` 순서로 올린다.
-

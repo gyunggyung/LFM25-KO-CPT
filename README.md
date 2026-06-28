@@ -5,6 +5,7 @@ This folder contains the Korean CPT workflow for `LiquidAI/LFM2.5-8B-A1B`.
 - Runbook: `docs/LFM2_KO_CPT_RUNBOOK_20260627.ko.md`
 - Current status / handoff: `docs/CURRENT_STATUS_20260627.ko.md`
 - Evaluation plan: `docs/LFM2_KO_EVAL_PLAN_20260627.ko.md`
+- vLLM evaluation runbook: `docs/LFM2_KO_VLLM_EVAL_RUNBOOK_20260628.ko.md`
 - Data mix config: `configs/ko_cpt_sources_20260627.json`
 - Data builder: `scripts/build_ko_cpt_mix.py`
 - Parallel LFM-style full data builder: `scripts/build_ko_cpt_mix_parallel.py`
@@ -18,6 +19,10 @@ This folder contains the Korean CPT workflow for `LiquidAI/LFM2.5-8B-A1B`.
 - HF upload helper: `scripts/upload_latest_lora.py`
 - HF dataset upload helper: `scripts/upload_cpt_dataset.py`
 - Packed tokenized export helper: `scripts/export_lfm25_tokenized_dataset.py`
+- vLLM lm-eval runner: `scripts/run_lfm2_ko_vllm_lm_eval.sh`
+- vLLM base-vs-CPT eval matrix: `scripts/run_lfm2_ko_eval_matrix.sh`
+- vLLM smoke runner: `scripts/run_lfm2_ko_vllm_smoke.sh`
+- lm-eval result summarizer: `scripts/summarize_lm_eval_results.py`
 
 Hugging Face:
 
