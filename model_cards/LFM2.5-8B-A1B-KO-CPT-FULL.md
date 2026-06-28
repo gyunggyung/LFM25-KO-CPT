@@ -28,7 +28,7 @@ Full-parameter Korean continued-pretraining project for [`LiquidAI/LFM2.5-8B-A1B
 
 This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-style knowledge, and terminal/tool-use behavior while preserving the base model's general English and instruction-following ability.
 
-> Status: the model card has been uploaded first. Full CPT training is in progress, and weights/checkpoints will be uploaded after training checkpoints are produced.
+> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint. Public vLLM evaluation is pending and will be added after base-vs-CPT runs finish.
 
 ## Contents
 
@@ -57,7 +57,7 @@ Target strengths:
 
 ## Quick Start
 
-The examples below are intended for the full model repository after weights are uploaded.
+The examples below use the full model repository.
 
 ### Transformers
 
@@ -233,12 +233,19 @@ References:
 - Checkpoint interval: 1,000 steps
 - Checkpoint retention: 4 latest checkpoints plus final model
 
-Estimated full run:
+Completed run:
 
 - Estimated tokens: 6,492,697,020
-- Estimated steps: 12,384
-- Observed practice speed: about 3.35-3.45 sec/step after warmup, excluding checkpoint writes
-- Conservative runtime estimate: 12-15.5 hours
+- Raw estimated steps before packing: 12,384
+- Actual packed trainer steps: 10,196
+- Train runtime: about 9h 38m
+- Train samples/sec: 18.81
+- Train steps/sec: 0.294
+- Final logged train loss: 0.712
+- Final checkpoint source: `checkpoint-10196`
+- Final model integrity check: `model.safetensors` opens successfully with 2,302 tensors
+
+Note: the distributed `torchrun` process reached step `10196/10196` and wrote `checkpoint-10196`. A SIGSEGV occurred during the extra post-train `trainer.save_model(final_full)` write, leaving the initial `final_full/model.safetensors` incomplete. The published `final_full` was rebuilt from the verified `checkpoint-10196` inference files.
 
 ## Data Mix
 
@@ -251,7 +258,8 @@ Statistics:
 - Rows after global deduplication: 4,622,971
 - Characters: 11,581,567,658
 - Estimated tokens: 6,492,697,020
-- Estimated training steps: 12,384 at effective batch 64 and sequence length 8192
+- Raw estimated training steps: 12,384 at effective batch 64 and sequence length 8192
+- Actual packed trainer steps: 10,196
 
 Per-source rows:
 
@@ -466,8 +474,11 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=False))
 
 - 전체 row: 4,622,971
 - 추정 token: 6.49B
-- 예상 step: 12,384
-- 예상 시간: 약 12-15.5시간
+- raw 예상 step: 12,384
+- 실제 packed trainer step: 10,196
+- 실제 train runtime: 약 9시간 38분
+- 최종 train loss: 0.712
+- 최종 weight 출처: 무결성 검사를 통과한 `checkpoint-10196`
 
 ### 한국어 법률 데이터 출처
 
@@ -509,4 +520,4 @@ Secondary checks:
 - Korean wiki QA/summarization holdout
 - Terminal/tool-use smoke tests
 
-Benchmark results will be added after training and evaluation.
+Benchmark results will be added after vLLM base-vs-CPT evaluation.

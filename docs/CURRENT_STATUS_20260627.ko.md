@@ -1,6 +1,6 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-28 10:14 KST
+최종 갱신: 2026-06-28 10:39 KST
 작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
@@ -92,31 +92,34 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - optimizer: `adamw_8bit`
 - `gradient_checkpointing=True`
 
-2026-06-28 10:14 KST 기준:
+2026-06-28 10:39 KST 기준:
 
 - full corpus tokenization/packing 완료
 - actual total step: `10,196`
-- latest observed step: 약 `9,790 / 10,196`
-- latest epoch: 약 `0.960`
-- latest loss range: 대략 `0.59-0.80`
+- completed step: `10,196 / 10,196`
+- final epoch: `1.0`
+- final logged train loss: `0.712`
+- train runtime: 약 `9h 38m`
+- train samples/sec: `18.81`
+- train steps/sec: `0.294`
 - 로그 위치: `lfm2_ko_cpt/logs/20260628_lfm25_8b_ko_cpt_full_lfmstyle/train.log`
-- checkpoint: `checkpoint-6000`, `checkpoint-7000`, `checkpoint-8000`, `checkpoint-9000`
+- checkpoint: `checkpoint-8000`, `checkpoint-9000`, `checkpoint-10000`, `checkpoint-10196`
 - `save_total_limit=4` 때문에 오래된 checkpoint는 자동 pruning됨
-- `final_full`: 아직 없음. 1 epoch 완료 뒤 trainer가 저장한다.
-- GPU VRAM: 각 GPU 약 `81-83GB / 143GB`
-- GPU util: 각 GPU 약 `98-100%`
-- 현재까지 OOM/RuntimeError 없음
+- `final_full`: 존재함
+- `final_full` 출처: 무결성 검사를 통과한 `checkpoint-10196` inference files
+- `final_full/model.safetensors`: `16,936,006,912` bytes, 2,302 tensors로 safetensors open 확인
+- 주의: step 완료와 `checkpoint-10196` 저장 후 추가 `trainer.save_model(final_full)` 중 rank 5 SIGSEGV가 발생했고, 최초 `final_full/model.safetensors`는 불완전했다. 해당 파일은 `final_full.corrupt_20260628_1036`로 보존하고, 정상 checkpoint에서 `final_full`을 재구성했다.
+- 현재 GPU: 학습 종료 후 비어 있음
 
 속도/예상:
 
 - steady-state 기준 체크포인트 저장 제외 약 `3.3-3.5 sec/step`
-- `checkpoint-9000` 이후 구간 기준 남은 시간은 약 20-30분
-- 1 epoch step 완료 예상: 2026-06-28 10:35-10:45 KST
-- `final_full` 저장까지 추가 10-20분 가능
+- 실제 완료: 2026-06-28 10:36 KST 부근
+- 다음 병목: HF model upload와 vLLM 평가
 
 ## vLLM 평가 준비
 
-평가는 무조건 vLLM으로 한다. 학습 완료 전에는 GPU 평가를 시작하지 않는다.
+평가는 무조건 vLLM으로 한다. 학습은 끝났고 `final_full` 무결성 확인까지 완료했다.
 
 준비된 파일:
 
@@ -130,7 +133,7 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 
 학습 완료 후 실행 순서:
 
-1. `final_full` 존재 확인
+1. `python scripts/upload_full_model.py`로 model repo에 README와 weights 업로드
 2. `bash scripts/run_lfm2_ko_vllm_smoke.sh`
 3. `TASK_SET=smoke LIMIT=100 bash scripts/run_lfm2_ko_eval_matrix.sh`
 4. `TASK_SET=korean bash scripts/run_lfm2_ko_eval_matrix.sh`
@@ -221,9 +224,8 @@ git status --short
 
 ## 다음 작업
 
-1. full CPT 1 epoch 완료와 `final_full` 저장을 확인한다.
-2. final model files가 정상인지 확인한 뒤 `python scripts/upload_full_model.py`로 Hugging Face model repo에 업로드한다.
-3. vLLM smoke/base-vs-CPT 평가를 시작한다.
-4. tokenized Parquet shard export가 끝나면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
-5. 평가 결과를 요약해 model card benchmark table에 반영한다.
-6. 공개 평가 추가 구현 우선순위는 `KMMLU`, `KMMLU-Pro`, `Ko-IFEval`, `Ko-GSM8K`, `Ko-ARC`, 법률 RAG/source QA다.
+1. `python scripts/upload_full_model.py`로 Hugging Face model repo에 업로드한다.
+2. vLLM smoke/base-vs-CPT 평가를 시작한다.
+3. tokenized Parquet shard export가 끝나면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
+4. 평가 결과를 요약해 model card benchmark table에 반영한다.
+5. 공개 평가 추가 구현 우선순위는 `KMMLU`, `KMMLU-Pro`, `Ko-IFEval`, `Ko-GSM8K`, `Ko-ARC`, 법률 RAG/source QA다.
