@@ -126,6 +126,7 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - `scripts/run_lfm2_ko_vllm_smoke.sh`
 - `scripts/vllm_lfm2_ko_smoke.py`
 - `scripts/summarize_lm_eval_results.py`
+- `scripts/upload_full_model.py`
 
 학습 완료 후 실행 순서:
 
@@ -221,7 +222,7 @@ git status --short
 ## 다음 작업
 
 1. full CPT 1 epoch 완료와 `final_full` 저장을 확인한다.
-2. final model files가 정상인지 확인한 뒤 Hugging Face model repo에 업로드한다.
+2. final model files가 정상인지 확인한 뒤 `python scripts/upload_full_model.py`로 Hugging Face model repo에 업로드한다.
 3. vLLM smoke/base-vs-CPT 평가를 시작한다.
 4. tokenized Parquet shard export가 끝나면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
 5. 평가 결과를 요약해 model card benchmark table에 반영한다.

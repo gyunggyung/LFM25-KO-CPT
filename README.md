@@ -17,6 +17,7 @@ This folder contains the Korean CPT workflow for `LiquidAI/LFM2.5-8B-A1B`.
 - Watch full preprocess then train: `scripts/watch_full_preprocess_then_train.sh`
 - Status: `scripts/status_lfm2_ko_cpt.sh`
 - HF upload helper: `scripts/upload_latest_lora.py`
+- HF full model upload helper: `scripts/upload_full_model.py`
 - HF dataset upload helper: `scripts/upload_cpt_dataset.py`
 - Packed tokenized export helper: `scripts/export_lfm25_tokenized_dataset.py`
 - vLLM lm-eval runner: `scripts/run_lfm2_ko_vllm_lm_eval.sh`
