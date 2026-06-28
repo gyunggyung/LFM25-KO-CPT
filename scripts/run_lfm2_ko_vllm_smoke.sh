@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK_DIR="$ROOT_DIR/lfm2_ko_cpt"
 DATA_ROOT="${DATA_ROOT:-/home/work/.data/lfm2_ko_cpt}"
-VLLM_ENV="${VLLM_ENV:-$ROOT_DIR/.vllm-lfm}"
+VLLM_ENV="${VLLM_ENV:-$ROOT_DIR/.vllm-lfm-cu12}"
 
 BASE_MODEL="${BASE_MODEL:-LiquidAI/LFM2.5-8B-A1B}"
 CPT_MODEL="${CPT_MODEL:-$DATA_ROOT/models/LFM2.5-8B-A1B-KO-CPT-FULL-20260628_lfm25_8b_ko_cpt_full_lfmstyle/final_full}"
@@ -33,8 +33,10 @@ export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
 export VLLM_WORKER_MULTIPROC_METHOD="${VLLM_WORKER_MULTIPROC_METHOD:-spawn}"
 
 VLLM_SITE_PACKAGES="$VLLM_ENV/lib/python3.12/site-packages"
-VLLM_CUDA_LIBS="$VLLM_SITE_PACKAGES/nvidia/cu13/lib:$VLLM_SITE_PACKAGES/nvidia/nccl/lib:$VLLM_SITE_PACKAGES/nvidia/nvshmem/lib:$VLLM_SITE_PACKAGES/nvidia/cudnn/lib:$VLLM_SITE_PACKAGES/nvidia/cusparselt/lib"
+VLLM_CUDA_LIBS="$VLLM_SITE_PACKAGES/nvidia/cuda_runtime/lib:$VLLM_SITE_PACKAGES/nvidia/cublas/lib:$VLLM_SITE_PACKAGES/nvidia/nccl/lib:$VLLM_SITE_PACKAGES/nvidia/nvshmem/lib:$VLLM_SITE_PACKAGES/nvidia/cudnn/lib:$VLLM_SITE_PACKAGES/nvidia/cusparselt/lib"
 export LD_LIBRARY_PATH="$VLLM_CUDA_LIBS:${LD_LIBRARY_PATH:-}"
+export PYTHONNOUSERSITE=1
+export PYTHONPATH=""
 
 echo "time_utc: $(date -u '+%F %T UTC')"
 echo "time_kst: $(TZ=Asia/Seoul date '+%F %T KST')"

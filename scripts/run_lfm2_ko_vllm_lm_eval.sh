@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK_DIR="$ROOT_DIR/lfm2_ko_cpt"
 DATA_ROOT="${DATA_ROOT:-/home/work/.data/lfm2_ko_cpt}"
-VLLM_ENV="${VLLM_ENV:-$ROOT_DIR/.vllm-lfm}"
+VLLM_ENV="${VLLM_ENV:-$ROOT_DIR/.vllm-lfm-cu12}"
 LIQUID_ENV="${LIQUID_ENV:-$ROOT_DIR/.liquid-sft-env}"
 
 MODEL_PATH="${MODEL_PATH:-$DATA_ROOT/models/LFM2.5-8B-A1B-KO-CPT-FULL-20260628_lfm25_8b_ko_cpt_full_lfmstyle/final_full}"
@@ -44,15 +44,17 @@ export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
 export VLLM_WORKER_MULTIPROC_METHOD="${VLLM_WORKER_MULTIPROC_METHOD:-spawn}"
 export NCCL_TIMEOUT="${NCCL_TIMEOUT:-3600}"
 
-# vLLM in .vllm-lfm is built against the CUDA 13 runtime wheels. The dynamic
-# loader does not always see those wheel libraries unless we expose them here.
+# Keep vLLM on its own venv torch. The parent shell often injects
+# /home/work/.local into PYTHONPATH, which breaks vLLM's compiled extension ABI.
 VLLM_SITE_PACKAGES="$VLLM_ENV/lib/python3.12/site-packages"
-VLLM_CUDA_LIBS="$VLLM_SITE_PACKAGES/nvidia/cu13/lib:$VLLM_SITE_PACKAGES/nvidia/nccl/lib:$VLLM_SITE_PACKAGES/nvidia/nvshmem/lib:$VLLM_SITE_PACKAGES/nvidia/cudnn/lib:$VLLM_SITE_PACKAGES/nvidia/cusparselt/lib"
+VLLM_CUDA_LIBS="$VLLM_SITE_PACKAGES/nvidia/cuda_runtime/lib:$VLLM_SITE_PACKAGES/nvidia/cublas/lib:$VLLM_SITE_PACKAGES/nvidia/nccl/lib:$VLLM_SITE_PACKAGES/nvidia/nvshmem/lib:$VLLM_SITE_PACKAGES/nvidia/cudnn/lib:$VLLM_SITE_PACKAGES/nvidia/cusparselt/lib"
 export LD_LIBRARY_PATH="$VLLM_CUDA_LIBS:${LD_LIBRARY_PATH:-}"
 
-# lm_eval is installed in the user/Unsloth environment while vLLM is installed
-# in .vllm-lfm. Keep this mixed PYTHONPATH until the eval environment is rebuilt.
-export PYTHONPATH="$LIQUID_ENV/lib/python3.12/site-packages:/home/work/.local/lib/python3.12/site-packages:${PYTHONPATH:-}"
+# lm_eval is installed outside the vLLM venv. Do not use this runner until the
+# lm-eval/vLLM environment is rebuilt; use the smoke runner first. Keeping the
+# PYTHONPATH disabled here prevents silently importing the wrong torch.
+export PYTHONNOUSERSITE=1
+export PYTHONPATH=""
 
 MODEL_ARGS="pretrained=$MODEL_PATH,tensor_parallel_size=$TP,dtype=bfloat16,trust_remote_code=True,gpu_memory_utilization=$GPU_MEMORY_UTILIZATION,max_model_len=$MAX_MODEL_LEN"
 
