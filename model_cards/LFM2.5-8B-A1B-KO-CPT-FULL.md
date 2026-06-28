@@ -569,6 +569,9 @@ Additional vLLM checks:
 | `mmlu_pro_economics` `LIMIT=500` | exact_match | 0.4420 | 0.4900 | +0.0480 | +10.86% | limited |
 | `mmlu_pro_law` `LIMIT=500` | exact_match | 0.1840 | 0.1240 | -0.0600 | -32.61% | limited |
 | `mmlu_prox_lite_ko` `LIMIT=500` | exact_match | 0.2585 | 0.1667 | -0.0918 | -35.51% | limited |
+| `global_mmlu_full_ko_professional_law` full | acc | 0.2581 | 0.2595 | +0.0014 | +0.54% | full subject |
+| `global_mmlu_full_ko_professional_accounting` full | acc | 0.2730 | 0.2340 | -0.0390 | -14.29% | full subject |
+| `global_mmlu_full_ko_high_school_macroeconomics` full | acc | 0.2436 | 0.2846 | +0.0410 | +16.83% | full subject |
 
 The limited checks are useful for regression tracking, but they should not be read as final leaderboard-quality numbers. The model improves strongly on several reasoning and instruction-following checks, while law-focused MMLU-Pro and MMLU-ProX-lite-ko need targeted remediation.
 

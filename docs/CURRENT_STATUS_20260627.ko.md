@@ -213,6 +213,9 @@ RUN_ID_BASE=20260628_030217_parallel_1gpu bash scripts/run_lfm2_ko_parallel_eval
 | `mmlu_pro_economics` `LIMIT=500` | exact_match | 0.4420 | 0.4900 | +0.0480 | +10.86% | limited run |
 | `mmlu_pro_law` `LIMIT=500` | exact_match | 0.1840 | 0.1240 | -0.0600 | -32.61% | limited run |
 | `mmlu_prox_lite_ko` `LIMIT=500` | exact_match | 0.2585 | 0.1667 | -0.0918 | -35.51% | limited run |
+| `global_mmlu_full_ko_professional_law` full | acc | 0.2581 | 0.2595 | +0.0014 | +0.54% | full subject |
+| `global_mmlu_full_ko_professional_accounting` full | acc | 0.2730 | 0.2340 | -0.0390 | -14.29% | full subject |
+| `global_mmlu_full_ko_high_school_macroeconomics` full | acc | 0.2436 | 0.2846 | +0.0410 | +16.83% | full subject |
 
 실패/교체:
 
