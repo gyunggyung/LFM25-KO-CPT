@@ -1,0 +1,23 @@
+# Additional vLLM/lm-eval refill queue after the first 22-item queue is exhausted.
+# Format: task:limit:num_fewshot
+# Empty limit means full task. Empty num_fewshot means task default.
+global_mmlu_full_ko_elementary_mathematics::
+global_mmlu_full_ko_global_facts::
+global_mmlu_full_ko_high_school_computer_science::
+global_mmlu_full_ko_miscellaneous::
+global_mmlu_full_ko_moral_scenarios::
+global_mmlu_full_ko_philosophy::
+global_mmlu_full_ko_prehistory::
+global_mmlu_full_ko_professional_medicine::
+global_mmlu_full_ko_anatomy::
+global_mmlu_full_ko_college_medicine::
+global_mmlu_full_ko_nutrition::
+global_mmlu_full_ko_clinical_knowledge::
+global_mmlu_full_ko_medical_genetics::
+arc_challenge::
+hellaswag:2000:
+gpqa_main_zeroshot:500:
+leaderboard_instruction_following::
+leaderboard_math_hard:1000:
+mmlu_pro_law:1000:
+mmlu_pro_economics:1000:

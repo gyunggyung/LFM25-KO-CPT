@@ -132,6 +132,7 @@ tmux new-session -d -s lfm2ko_eval_queue_20260628 \
 - Parallel eval runner: [scripts/run_lfm2_ko_parallel_eval_1gpu.sh](scripts/run_lfm2_ko_parallel_eval_1gpu.sh)
 - Queue refill runner: [scripts/run_lfm2_ko_eval_queue.sh](scripts/run_lfm2_ko_eval_queue.sh)
 - Current eval queue: [configs/eval_queue_global_mmlu_ko_refill_20260628.txt](configs/eval_queue_global_mmlu_ko_refill_20260628.txt)
+- Follow-up eval queue: [configs/eval_queue_global_mmlu_ko_refill2_20260628.txt](configs/eval_queue_global_mmlu_ko_refill2_20260628.txt)
 - Global MMLU KO subject sweep: [docs/evals/GLOBAL_MMLU_KO_SUBJECT_SWEEP_20260628.md](docs/evals/GLOBAL_MMLU_KO_SUBJECT_SWEEP_20260628.md)
 - Model upload: [scripts/upload_full_model.py](scripts/upload_full_model.py)
 - Dataset upload: [scripts/upload_cpt_dataset.py](scripts/upload_cpt_dataset.py)
