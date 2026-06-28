@@ -1,6 +1,6 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-28 01:00 KST
+최종 갱신: 2026-06-28 10:14 KST
 작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
@@ -26,6 +26,7 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 현재 tmux 세션:
 
 - `lfm2_ko_cpt_full_lfmstyle_20260627`: H200 8GPU full-parameter CPT 본 학습
+- `lfm2_ko_cpt_tokenized_export_watcher_20260628`: 학습 loss 확인 뒤 tokenized Parquet export/upload를 낮은 IO 우선순위로 실행하는 watcher
 
 ## 전처리 산출물
 
@@ -42,7 +43,8 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - rows after global deduplication: `4,622,971`
 - chars: `11,581,567,658`
 - estimated tokens: `6,492,697,020`
-- estimated training steps at effective batch 64 and seq 8192: `12,384`
+- raw estimate at effective batch 64 and seq 8192: `12,384`
+- actual packed trainer steps observed in this run: `10,196`
 
 소스 mix:
 
@@ -90,22 +92,49 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - optimizer: `adamw_8bit`
 - `gradient_checkpointing=True`
 
-2026-06-28 01:00 KST 기준:
+2026-06-28 10:14 KST 기준:
 
-- full corpus tokenization 완료
-- packing 완료 후 실제 optimizer step 진입
+- full corpus tokenization/packing 완료
+- actual total step: `10,196`
+- latest observed step: 약 `9,790 / 10,196`
+- latest epoch: 약 `0.960`
+- latest loss range: 대략 `0.59-0.80`
 - 로그 위치: `lfm2_ko_cpt/logs/20260628_lfm25_8b_ko_cpt_full_lfmstyle/train.log`
-- loss 로그 확인: 약 37 step, 최근 loss 약 `1.92`
-- GPU VRAM: 각 GPU 약 `82-84GB / 143GB`
+- checkpoint: `checkpoint-6000`, `checkpoint-7000`, `checkpoint-8000`, `checkpoint-9000`
+- `save_total_limit=4` 때문에 오래된 checkpoint는 자동 pruning됨
+- `final_full`: 아직 없음. 1 epoch 완료 뒤 trainer가 저장한다.
+- GPU VRAM: 각 GPU 약 `81-83GB / 143GB`
 - GPU util: 각 GPU 약 `98-100%`
-- 첫 checkpoint는 `save_steps=1000` 기준 checkpoint-1000에서 생성 예정
+- 현재까지 OOM/RuntimeError 없음
 
 속도/예상:
 
-- practice 기준 체크포인트 저장 제외 약 `3.35-3.45 sec/step`
-- packed dataset 기준 실제 1 epoch 총 step은 약 `10.2k`로 관측됨
-- 첫 37 step 구간 기준 step 속도는 추후 100+ step에서 재측정
-- full 1 epoch 예상 runtime은 실제 step 속도 안정화 후 갱신
+- steady-state 기준 체크포인트 저장 제외 약 `3.3-3.5 sec/step`
+- `checkpoint-9000` 이후 구간 기준 남은 시간은 약 20-30분
+- 1 epoch step 완료 예상: 2026-06-28 10:35-10:45 KST
+- `final_full` 저장까지 추가 10-20분 가능
+
+## vLLM 평가 준비
+
+평가는 무조건 vLLM으로 한다. 학습 완료 전에는 GPU 평가를 시작하지 않는다.
+
+준비된 파일:
+
+- `docs/LFM2_KO_VLLM_EVAL_RUNBOOK_20260628.ko.md`
+- `scripts/run_lfm2_ko_vllm_lm_eval.sh`
+- `scripts/run_lfm2_ko_eval_matrix.sh`
+- `scripts/run_lfm2_ko_vllm_smoke.sh`
+- `scripts/vllm_lfm2_ko_smoke.py`
+- `scripts/summarize_lm_eval_results.py`
+
+학습 완료 후 실행 순서:
+
+1. `final_full` 존재 확인
+2. `bash scripts/run_lfm2_ko_vllm_smoke.sh`
+3. `TASK_SET=smoke LIMIT=100 bash scripts/run_lfm2_ko_eval_matrix.sh`
+4. `TASK_SET=korean bash scripts/run_lfm2_ko_eval_matrix.sh`
+5. `TASK_SET=regression bash scripts/run_lfm2_ko_eval_matrix.sh`
+6. 결과 요약: `python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix`
 
 ## Hugging Face Dataset Upload
 
@@ -168,6 +197,8 @@ git status --short
 
 최근 주요 커밋:
 
+- `b0b277b Add vLLM evaluation workflow for LFM2 KO CPT`
+- `3afb965 Document active LFM2 full CPT training`
 - `13806b0 Wait for training loss before tokenized export`
 - `93299b7 Rebuild tokenized export cleanly`
 - `7976431 Tighten tokenized export watcher trigger`
@@ -183,14 +214,15 @@ git status --short
 - `README.md`
 - `docs/LFM2_KO_CPT_RUNBOOK_20260627.ko.md`
 - `docs/LFM2_KO_EVAL_PLAN_20260627.ko.md`
+- `docs/LFM2_KO_VLLM_EVAL_RUNBOOK_20260628.ko.md`
 - `model_cards/LFM2.5-8B-A1B-KO-CPT-FULL.md`
 - `dataset_cards/LFM2.5-8B-A1B-KO-CPT-DATA.md`
 
 ## 다음 작업
 
-1. 100+ step 구간에서 실제 sec/step과 ETA를 갱신한다.
-2. checkpoint-1000 생성 여부를 확인한다.
-3. tokenized Parquet shard export가 끝나면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
-4. checkpoint-1000 생성 시 모델 card에 intermediate checkpoint 상태를 반영한다.
-5. GPU util이 떨어지거나 OOM/RuntimeError가 나오면 즉시 로그와 checkpoint 상태를 확인한다.
-6. 공개 평가 우선순위는 `KMMLU`, `KMMLU-Pro`, `Ko-IFEval`, `Ko-GSM8K`, `Ko-ARC`, 법률 RAG/source QA다.
+1. full CPT 1 epoch 완료와 `final_full` 저장을 확인한다.
+2. final model files가 정상인지 확인한 뒤 Hugging Face model repo에 업로드한다.
+3. vLLM smoke/base-vs-CPT 평가를 시작한다.
+4. tokenized Parquet shard export가 끝나면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
+5. 평가 결과를 요약해 model card benchmark table에 반영한다.
+6. 공개 평가 추가 구현 우선순위는 `KMMLU`, `KMMLU-Pro`, `Ko-IFEval`, `Ko-GSM8K`, `Ko-ARC`, 법률 RAG/source QA다.
