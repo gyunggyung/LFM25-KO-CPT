@@ -225,6 +225,10 @@ RUN_ID_BASE=20260628_030217_parallel_1gpu bash scripts/run_lfm2_ko_parallel_eval
 | `global_mmlu_full_ko_marketing` full | acc | 0.3590 | 0.5000 | +0.1410 | +39.29% | full subject |
 | `global_mmlu_full_ko_professional_psychology` full | acc | 0.2729 | 0.3284 | +0.0556 | +20.36% | full subject |
 | `global_mmlu_full_ko_college_biology` full | acc | 0.2569 | 0.3333 | +0.0764 | +29.73% | full subject |
+| `global_mmlu_full_ko_electrical_engineering` full | acc | 0.2759 | 0.3103 | +0.0345 | +12.50% | full subject |
+| `global_mmlu_full_ko_high_school_world_history` full | acc | 0.2911 | 0.3376 | +0.0464 | +15.94% | full subject |
+| `global_mmlu_full_ko_high_school_statistics` full | acc | 0.2870 | 0.1574 | -0.1296 | -45.16% | full subject |
+| `global_mmlu_full_ko_astronomy` full | acc | 0.3421 | 0.2829 | -0.0592 | -17.31% | full subject |
 | `kmmlu_hard_humss` `LIMIT=1000` | acc | 0.2533 | 0.2675 | +0.0143 | +5.63% | limited run |
 | `kmmlu_hard` `LIMIT=1000` | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% | limited run |
 | `kmmlu_hard_stem` `LIMIT=1000` | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% | limited run |
@@ -232,8 +236,9 @@ RUN_ID_BASE=20260628_030217_parallel_1gpu bash scripts/run_lfm2_ko_parallel_eval
 해석:
 
 - CPT는 Global MMLU Korean 세부 과목 다수, GSM8K, BoolQ, ARC, IFEval/leaderboard instruction-following에서 확실히 오른다.
-- 반대로 KMMLU hard 전체/STEM, MMLU-ProX-lite-ko, MMLU-Pro law, professional accounting은 하락했다.
+- 반대로 KMMLU hard 전체/STEM, MMLU-ProX-lite-ko, MMLU-Pro law, professional accounting, high-school statistics, astronomy, chemistry, formal logic은 하락했다.
 - KMMLU direct exact-match는 base가 0에 가깝고 CPT도 0.01대라 현재 프롬프트/파서 진단용으로만 본다. 품질 판단은 `kmmlu_hard` acc와 `global_mmlu_full_ko_*` acc 중심이 맞다.
+- 과목별 전체 표는 `docs/evals/GLOBAL_MMLU_KO_SUBJECT_SWEEP_20260628.md`에 둔다.
 
 ## 다음 post-training 의견
 

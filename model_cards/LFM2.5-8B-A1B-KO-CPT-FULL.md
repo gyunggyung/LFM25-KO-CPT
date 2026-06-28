@@ -596,6 +596,23 @@ Additional vLLM checks:
 | `kmmlu_hard` `LIMIT=1000` | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% | limited |
 | `kmmlu_hard_stem` `LIMIT=1000` | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% | limited |
 
+Latest Global MMLU Korean subject sweep:
+
+| Task | Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta | Relative |
+|---|---|---:|---:|---:|---:|
+| `global_mmlu_full_ko_astronomy` | acc | 0.3421 | 0.2829 | -0.0592 | -17.31% |
+| `global_mmlu_full_ko_conceptual_physics` | acc | 0.3149 | 0.2936 | -0.0213 | -6.76% |
+| `global_mmlu_full_ko_econometrics` | acc | 0.2632 | 0.2807 | +0.0175 | +6.67% |
+| `global_mmlu_full_ko_electrical_engineering` | acc | 0.2759 | 0.3103 | +0.0345 | +12.50% |
+| `global_mmlu_full_ko_formal_logic` | acc | 0.3254 | 0.2778 | -0.0476 | -14.63% |
+| `global_mmlu_full_ko_high_school_biology` | acc | 0.2710 | 0.2871 | +0.0161 | +5.95% |
+| `global_mmlu_full_ko_high_school_chemistry` | acc | 0.2315 | 0.1921 | -0.0394 | -17.02% |
+| `global_mmlu_full_ko_high_school_statistics` | acc | 0.2870 | 0.1574 | -0.1296 | -45.16% |
+| `global_mmlu_full_ko_high_school_european_history` | acc | 0.2788 | 0.3152 | +0.0364 | +13.04% |
+| `global_mmlu_full_ko_high_school_world_history` | acc | 0.2911 | 0.3376 | +0.0464 | +15.94% |
+| `global_mmlu_full_ko_jurisprudence` | acc | 0.2870 | 0.2685 | -0.0185 | -6.45% |
+| `global_mmlu_full_ko_logical_fallacies` | acc | 0.3067 | 0.2945 | -0.0123 | -4.00% |
+
 The limited checks are useful for regression tracking, but they should not be read as final leaderboard-quality numbers. The model improves strongly on several reasoning and instruction-following checks, while law-focused MMLU-Pro and MMLU-ProX-lite-ko need targeted remediation.
 
 KMMLU direct exact-match runs currently show near-zero base scores and small non-zero CPT scores. Treat those as prompt/extraction diagnostics rather than quality benchmarks until the direct-answer parser is fixed.
@@ -607,10 +624,11 @@ The next stage should be targeted post-training, not another broad CPT-only pass
 Priority plan:
 
 1. Korean MCQA remediation SFT: KMMLU, KMMLU-hard, MMLU-ProX-lite-ko style, legal/accounting/finance questions, exact option-label outputs, and short rationales.
-2. Korean instruction-following SFT: Ko-IFEval-style constraints, Korean formatting, uncertainty, refusal, and multi-condition prompts.
-3. Tool and agent SFT: Korean BFCL-style tool schemas, terminal/tool-call traces, JSON validity, and multi-turn task completion.
-4. Preference tuning: DPO/ORPO/KTO on current failure pairs. Reward correct option extraction, concise Korean, valid tools, and uncertainty over hallucination.
-5. Small preservation mix: keep GSM8K, ARC, BoolQ, IFEval, and high-gain Global MMLU KO examples in the mix so post-training does not erase current gains.
+2. STEM/legal/accounting remediation SFT: target current regressions in high-school statistics, astronomy, chemistry, formal logic, jurisprudence, professional accounting, and MMLU-Pro law.
+3. Korean instruction-following SFT: Ko-IFEval-style constraints, Korean formatting, uncertainty, refusal, and multi-condition prompts.
+4. Tool and agent SFT: Korean BFCL-style tool schemas, terminal/tool-call traces, JSON validity, and multi-turn task completion.
+5. Preference tuning: DPO/ORPO/KTO on current failure pairs. Reward correct option extraction, concise Korean, valid tools, and uncertainty over hallucination.
+6. Small preservation mix: keep GSM8K, ARC, BoolQ, IFEval, and high-gain Global MMLU KO examples in the mix so post-training does not erase current gains.
 
 Concrete gates for the next model:
 

@@ -63,6 +63,10 @@ All numbers below are vLLM/lm-eval base-vs-CPT comparisons.
 | Global MMLU KO sociology full | acc | 0.2886 | 0.4776 | +0.1891 | +65.52% | full subject |
 | Global MMLU KO computer security full | acc | 0.2900 | 0.4500 | +0.1600 | +55.17% | full subject |
 | Global MMLU KO college biology full | acc | 0.2569 | 0.3333 | +0.0764 | +29.73% | full subject |
+| Global MMLU KO electrical engineering full | acc | 0.2759 | 0.3103 | +0.0345 | +12.50% | full subject |
+| Global MMLU KO high school world history full | acc | 0.2911 | 0.3376 | +0.0464 | +15.94% | full subject |
+| Global MMLU KO high school statistics full | acc | 0.2870 | 0.1574 | -0.1296 | -45.16% | full subject |
+| Global MMLU KO astronomy full | acc | 0.3421 | 0.2829 | -0.0592 | -17.31% | full subject |
 | KMMLU hard HUMSS `LIMIT=1000` | acc | 0.2533 | 0.2675 | +0.0143 | +5.63% | limited |
 | KMMLU hard `LIMIT=1000` | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% | limited |
 | KMMLU hard STEM `LIMIT=1000` | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% | limited |
@@ -102,6 +106,12 @@ Summarize an eval directory:
 python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix
 ```
 
+Build a base-vs-CPT comparison table from completed matrix directories:
+
+```bash
+python scripts/compare_lm_eval_matrix.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix
+```
+
 Queue-based refill loop:
 
 ```bash
@@ -122,6 +132,7 @@ tmux new-session -d -s lfm2ko_eval_queue_20260628 \
 - Parallel eval runner: [scripts/run_lfm2_ko_parallel_eval_1gpu.sh](scripts/run_lfm2_ko_parallel_eval_1gpu.sh)
 - Queue refill runner: [scripts/run_lfm2_ko_eval_queue.sh](scripts/run_lfm2_ko_eval_queue.sh)
 - Current eval queue: [configs/eval_queue_global_mmlu_ko_refill_20260628.txt](configs/eval_queue_global_mmlu_ko_refill_20260628.txt)
+- Global MMLU KO subject sweep: [docs/evals/GLOBAL_MMLU_KO_SUBJECT_SWEEP_20260628.md](docs/evals/GLOBAL_MMLU_KO_SUBJECT_SWEEP_20260628.md)
 - Model upload: [scripts/upload_full_model.py](scripts/upload_full_model.py)
 - Dataset upload: [scripts/upload_cpt_dataset.py](scripts/upload_cpt_dataset.py)
 
@@ -130,10 +141,11 @@ tmux new-session -d -s lfm2ko_eval_queue_20260628 \
 The next training stage should not be another broad CPT pass first. The CPT run already improved Korean knowledge slices and general reasoning, but it damaged Korean hard multiple-choice and some law/accounting extraction formats. The next stage should be targeted post-training with strict eval gates.
 
 1. Korean MCQA remediation SFT: train on KMMLU, KMMLU-hard, MMLU-ProX-lite-ko-style prompts, Korean law/accounting/finance questions, exact option-label answers, and short rationales. Target gates: `kmmlu_hard` from 0.1720 to at least 0.2300, `kmmlu_hard_stem` from 0.1564 to at least 0.2100, `mmlu_prox_lite_ko` from 0.1667 back above the base 0.2585 and target 0.3000.
-2. Korean instruction-following SFT: add Ko-IFEval-style constraints, Korean formatting rules, and refusal/uncertainty examples. Preserve current gains by keeping IFEval prompt loose at or above 0.3346 and BoolQ at or above 0.7902.
-3. Tool and agent SFT: use Korean BFCL-style function calls, terminal/tool-call traces, JSON schema following, and multi-turn task completion. This aligns with Liquid's official LFM2.5 tool/agent benchmark focus.
-4. Preference tuning: run DPO/ORPO/KTO on pairs mined from current eval failures. Prefer correct option extraction, concise Korean answers, valid JSON/tool calls, and explicit uncertainty over hallucination.
-5. Short preservation mix: include a small amount of English/general reasoning and current high-gain Korean Global MMLU examples to avoid losing GSM8K, ARC, BoolQ, and Global MMLU KO gains.
+2. STEM and legal/accounting remediation: use current regressions as hard negatives, especially high-school statistics, astronomy, chemistry, formal logic, jurisprudence, professional accounting, and MMLU-Pro law.
+3. Korean instruction-following SFT: add Ko-IFEval-style constraints, Korean formatting rules, and refusal/uncertainty examples. Preserve current gains by keeping IFEval prompt loose at or above 0.3346 and BoolQ at or above 0.7902.
+4. Tool and agent SFT: use Korean BFCL-style function calls, terminal/tool-call traces, JSON schema following, and multi-turn task completion. This aligns with Liquid's official LFM2.5 tool/agent benchmark focus.
+5. Preference tuning: run DPO/ORPO/KTO on pairs mined from current eval failures. Prefer correct option extraction, concise Korean answers, valid JSON/tool calls, and explicit uncertainty over hallucination.
+6. Short preservation mix: include a small amount of English/general reasoning and current high-gain Korean Global MMLU examples to avoid losing GSM8K, ARC, BoolQ, and Global MMLU KO gains.
 
 Do RL/GRPO only after the SFT and preference data are reliable. For this model, reliable reward functions are easier for tool-call validity, option correctness, and math final-answer extraction than for open-ended Korean prose quality.
 

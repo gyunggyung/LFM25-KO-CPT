@@ -4,3 +4,4 @@ unsloth_compiled_cache/
 __pycache__/
 *.pyc
 .DS_Store
+configs/*.state
