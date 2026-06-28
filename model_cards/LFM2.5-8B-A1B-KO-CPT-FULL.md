@@ -585,8 +585,42 @@ Additional vLLM checks:
 | `global_mmlu_full_ko_management` full | acc | 0.3107 | 0.4369 | +0.1262 | +40.63% | full subject |
 | `global_mmlu_full_ko_human_sexuality` full | acc | 0.2672 | 0.3740 | +0.1069 | +40.00% | full subject |
 | `global_mmlu_full_ko_international_law` full | acc | 0.3223 | 0.4215 | +0.0992 | +30.77% | full subject |
+| `leaderboard_instruction_following` / `leaderboard_ifeval` | prompt_level_loose_acc | 0.2976 | 0.3346 | +0.0370 | +12.42% | lm-eval leaderboard task |
+| `global_mmlu_full_ko_business_ethics` full | acc | 0.2100 | 0.4500 | +0.2400 | +114.29% | full subject |
+| `global_mmlu_full_ko_sociology` full | acc | 0.2886 | 0.4776 | +0.1891 | +65.52% | full subject |
+| `global_mmlu_full_ko_computer_security` full | acc | 0.2900 | 0.4500 | +0.1600 | +55.17% | full subject |
+| `global_mmlu_full_ko_marketing` full | acc | 0.3590 | 0.5000 | +0.1410 | +39.29% | full subject |
+| `global_mmlu_full_ko_professional_psychology` full | acc | 0.2729 | 0.3284 | +0.0556 | +20.36% | full subject |
+| `global_mmlu_full_ko_college_biology` full | acc | 0.2569 | 0.3333 | +0.0764 | +29.73% | full subject |
+| `kmmlu_hard_humss` `LIMIT=1000` | acc | 0.2533 | 0.2675 | +0.0143 | +5.63% | limited |
+| `kmmlu_hard` `LIMIT=1000` | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% | limited |
+| `kmmlu_hard_stem` `LIMIT=1000` | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% | limited |
 
 The limited checks are useful for regression tracking, but they should not be read as final leaderboard-quality numbers. The model improves strongly on several reasoning and instruction-following checks, while law-focused MMLU-Pro and MMLU-ProX-lite-ko need targeted remediation.
+
+KMMLU direct exact-match runs currently show near-zero base scores and small non-zero CPT scores. Treat those as prompt/extraction diagnostics rather than quality benchmarks until the direct-answer parser is fixed.
+
+## Recommended Next Post-Training
+
+The next stage should be targeted post-training, not another broad CPT-only pass. Liquid's official LFM2.5-8B-A1B reporting emphasizes instruction following, math, tool use, and agentic workflows such as IFEval, IFBench, Multi-IF, MATH500, AIME, BFCL, and Tau2. The Japanese LFM2.5-1.2B-JP model card reports language-specialized axes such as JMMLU-ProX, JMMLU, J-MIFEval, J-GSM8K, J-MATH500, JHumanEval+, and J-BFCLv3. The Korean follow-up should mirror those axes with Korean data and Korean eval gates.
+
+Priority plan:
+
+1. Korean MCQA remediation SFT: KMMLU, KMMLU-hard, MMLU-ProX-lite-ko style, legal/accounting/finance questions, exact option-label outputs, and short rationales.
+2. Korean instruction-following SFT: Ko-IFEval-style constraints, Korean formatting, uncertainty, refusal, and multi-condition prompts.
+3. Tool and agent SFT: Korean BFCL-style tool schemas, terminal/tool-call traces, JSON validity, and multi-turn task completion.
+4. Preference tuning: DPO/ORPO/KTO on current failure pairs. Reward correct option extraction, concise Korean, valid tools, and uncertainty over hallucination.
+5. Small preservation mix: keep GSM8K, ARC, BoolQ, IFEval, and high-gain Global MMLU KO examples in the mix so post-training does not erase current gains.
+
+Concrete gates for the next model:
+
+- `kmmlu_hard`: improve from 0.1720 to at least 0.2300.
+- `kmmlu_hard_stem`: improve from 0.1564 to at least 0.2100.
+- `mmlu_prox_lite_ko`: recover above the base score 0.2585 and target 0.3000.
+- `mmlu_pro_law`: recover above the base score 0.1840 and target 0.2300.
+- Preserve `gsm8k` flexible exact match at or above 0.5701.
+- Preserve `boolq` accuracy at or above 0.7902.
+- Preserve `leaderboard_instruction_following` prompt loose at or above 0.3346.
 
 ## Public Benchmark Plan
 

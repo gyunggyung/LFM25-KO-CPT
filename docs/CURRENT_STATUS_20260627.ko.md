@@ -218,6 +218,46 @@ RUN_ID_BASE=20260628_030217_parallel_1gpu bash scripts/run_lfm2_ko_parallel_eval
 | `global_mmlu_full_ko_high_school_macroeconomics` full | acc | 0.2436 | 0.2846 | +0.0410 | +16.83% | full subject |
 | `global_mmlu_full_ko_virology` full | acc | 0.2831 | 0.3795 | +0.0964 | +34.05% | full subject |
 | `global_mmlu_full_ko_world_religions` full | acc | 0.3450 | 0.4854 | +0.1404 | +40.70% | full subject |
+| `leaderboard_instruction_following` / `leaderboard_ifeval` | prompt_level_loose_acc | 0.2976 | 0.3346 | +0.0370 | +12.42% | lm-eval leaderboard task |
+| `global_mmlu_full_ko_business_ethics` full | acc | 0.2100 | 0.4500 | +0.2400 | +114.29% | full subject |
+| `global_mmlu_full_ko_sociology` full | acc | 0.2886 | 0.4776 | +0.1891 | +65.52% | full subject |
+| `global_mmlu_full_ko_computer_security` full | acc | 0.2900 | 0.4500 | +0.1600 | +55.17% | full subject |
+| `global_mmlu_full_ko_marketing` full | acc | 0.3590 | 0.5000 | +0.1410 | +39.29% | full subject |
+| `global_mmlu_full_ko_professional_psychology` full | acc | 0.2729 | 0.3284 | +0.0556 | +20.36% | full subject |
+| `global_mmlu_full_ko_college_biology` full | acc | 0.2569 | 0.3333 | +0.0764 | +29.73% | full subject |
+| `kmmlu_hard_humss` `LIMIT=1000` | acc | 0.2533 | 0.2675 | +0.0143 | +5.63% | limited run |
+| `kmmlu_hard` `LIMIT=1000` | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% | limited run |
+| `kmmlu_hard_stem` `LIMIT=1000` | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% | limited run |
+
+해석:
+
+- CPT는 Global MMLU Korean 세부 과목 다수, GSM8K, BoolQ, ARC, IFEval/leaderboard instruction-following에서 확실히 오른다.
+- 반대로 KMMLU hard 전체/STEM, MMLU-ProX-lite-ko, MMLU-Pro law, professional accounting은 하락했다.
+- KMMLU direct exact-match는 base가 0에 가깝고 CPT도 0.01대라 현재 프롬프트/파서 진단용으로만 본다. 품질 판단은 `kmmlu_hard` acc와 `global_mmlu_full_ko_*` acc 중심이 맞다.
+
+## 다음 post-training 의견
+
+다음 단계는 broad CPT 반복보다 targeted post-training이 우선이다. 현재 CPT는 한국어 지식 과목과 일반 추론을 크게 올렸지만, KMMLU hard, MMLU-ProX-lite-ko, MMLU-Pro law, 회계 쪽에서 하락했다. 그래서 다음 학습 목표는 "한국어를 더 많이 읽히기"보다 "한국어 선택형/법률/회계/툴콜 포맷을 정확히 맞히게 하기"다.
+
+추천 순서:
+
+1. Korean MCQA remediation SFT
+   - 데이터: KMMLU, KMMLU-hard, MMLU-ProX-lite-ko 형식, 한국 법률/회계/금융 객관식, 현재 틀린 샘플 hard negative.
+   - 출력: 정답 선택지 라벨, 짧은 근거, 필요 시 최종 answer-only 필드.
+   - 목표: `kmmlu_hard` 0.1720 -> 0.2300 이상, `kmmlu_hard_stem` 0.1564 -> 0.2100 이상, `mmlu_prox_lite_ko` 0.1667 -> 0.3000 목표.
+2. Korean instruction-following SFT
+   - 데이터: Ko-IFEval식 제약, 한국어 포맷 준수, 불확실성 표현, 거절, 다조건 지시문.
+   - 목표: `leaderboard_instruction_following` prompt loose 0.3346 이상 유지, IFEval full loose 0.3216 이상 유지.
+3. Tool/agent SFT
+   - 데이터: 한국어 BFCL식 함수 호출, terminal/tool-call traces, JSON schema, 다중 턴 작업 완료.
+   - 목표: Liquid 공식 축인 BFCL/Tau2 계열을 나중에 별도 harness로 평가 가능하게 만들기.
+4. DPO/ORPO/KTO
+   - 데이터: 현재 base-vs-CPT 평가 실패 샘플에서 만든 선호쌍.
+   - 선호: 정확한 선택지 추출, 짧고 안정적인 한국어, 유효한 JSON/tool-call, 모르면 불확실성 표시.
+5. Preservation mix
+   - 보존: GSM8K flexible 0.5701 이상, BoolQ 0.7902 이상, ARC/Global MMLU KO 상승 과목을 유지하도록 일부 섞는다.
+
+RL/GRPO는 첫 단계로 두지 않는다. 정답 검증이 명확한 tool-call, option correctness, math final-answer에 대해서만 SFT/DPO 이후 적용하는 편이 낫다.
 
 실패/교체:
 

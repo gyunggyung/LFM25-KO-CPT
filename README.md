@@ -30,13 +30,13 @@ Full-parameter Korean continued pretraining project for
 
 This project adapts LiquidAI LFM2.5-8B-A1B to Korean through full-parameter continued pretraining. The data mixture focuses on Korean legal text, finance text, wiki-style knowledge, terminal/tool-call behavior, and general instruction-preserving text. Evaluation is run with vLLM and lm-evaluation-harness against the original base model.
 
-The strongest confirmed gains so far are on GSM8K, Korean Global MMLU subject slices, BoolQ, ARC-Challenge, and instruction-following. Some law-oriented MMLU-Pro and MMLU-ProX-lite-ko checks regress, so the next data iteration should add targeted Korean/legal multiple-choice remediation.
+The strongest confirmed gains so far are on GSM8K, Korean Global MMLU subject slices, BoolQ, ARC-Challenge, and instruction-following. KMMLU hard, MMLU-Pro law, MMLU-ProX-lite-ko, and accounting checks regress, so the next post-training stage should target Korean multiple-choice format reliability, legal/accounting reasoning, and answer extraction.
 
 ## 한국어 요약
 
 이 작업은 LiquidAI `LFM2.5-8B-A1B`에 한국어 지식을 이식하기 위한 full CPT 실험이다. 데이터는 한국어 법률, 금융, 위키, 터미널 기록, tool-call 형식, 일반 지시문 데이터 중심으로 구성했다. 평가는 원본 base 모델과 CPT 모델을 vLLM으로 같은 조건에서 비교한다.
 
-현재까지 GSM8K, Global MMLU Korean 일부 과목, BoolQ, ARC-Challenge, IFEval은 상승했다. 반대로 MMLU-Pro law와 MMLU-ProX-lite-ko는 하락했으므로, 다음 학습에서는 한국어/법률 객관식 풀이 형식과 선택지 추출 안정성을 보강해야 한다.
+현재까지 GSM8K, Global MMLU Korean 여러 과목, BoolQ, ARC-Challenge, IFEval 계열은 상승했다. 반대로 KMMLU hard, MMLU-Pro law, MMLU-ProX-lite-ko, 회계 과목은 하락했으므로, 다음 학습에서는 한국어 객관식 포맷, 법률/회계 추론, 선택지 추출 안정성을 직접 보강해야 한다.
 
 ## Key Results
 
@@ -46,6 +46,7 @@ All numbers below are vLLM/lm-eval base-vs-CPT comparisons.
 |---|---|---:|---:|---:|---:|---|
 | IFEval full | prompt loose | 0.2921 | 0.3216 | +0.0295 | +10.10% | full task |
 | IFEval full | instruction loose | 0.4341 | 0.4628 | +0.0287 | +6.61% | full task |
+| Leaderboard instruction following | prompt loose | 0.2976 | 0.3346 | +0.0370 | +12.42% | lm-eval `leaderboard_instruction_following` |
 | GSM8K full 5-shot | exact_match flexible | 0.4845 | 0.5701 | +0.0856 | +17.67% | full task |
 | GSM8K full 5-shot | exact_match strict | 0.2472 | 0.4617 | +0.2145 | +86.77% | full task |
 | Global MMLU Korean `LIMIT=500` | acc | 0.2803 | 0.3086 | +0.0283 | +10.10% | limited |
@@ -58,6 +59,13 @@ All numbers below are vLLM/lm-eval base-vs-CPT comparisons.
 | Global MMLU KO world religions full | acc | 0.3450 | 0.4854 | +0.1404 | +40.70% | full subject |
 | Global MMLU KO international law full | acc | 0.3223 | 0.4215 | +0.0992 | +30.77% | full subject |
 | Global MMLU KO virology full | acc | 0.2831 | 0.3795 | +0.0964 | +34.05% | full subject |
+| Global MMLU KO business ethics full | acc | 0.2100 | 0.4500 | +0.2400 | +114.29% | full subject |
+| Global MMLU KO sociology full | acc | 0.2886 | 0.4776 | +0.1891 | +65.52% | full subject |
+| Global MMLU KO computer security full | acc | 0.2900 | 0.4500 | +0.1600 | +55.17% | full subject |
+| Global MMLU KO college biology full | acc | 0.2569 | 0.3333 | +0.0764 | +29.73% | full subject |
+| KMMLU hard HUMSS `LIMIT=1000` | acc | 0.2533 | 0.2675 | +0.0143 | +5.63% | limited |
+| KMMLU hard `LIMIT=1000` | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% | limited |
+| KMMLU hard STEM `LIMIT=1000` | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% | limited |
 | MMLU-Pro economics `LIMIT=500` | exact_match | 0.4420 | 0.4900 | +0.0480 | +10.86% | limited |
 | MMLU-Pro law `LIMIT=500` | exact_match | 0.1840 | 0.1240 | -0.0600 | -32.61% | limited |
 | MMLU-ProX Lite KO `LIMIT=500` | exact_match | 0.2585 | 0.1667 | -0.0918 | -35.51% | limited |
@@ -107,10 +115,22 @@ python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<
 - Model upload: [scripts/upload_full_model.py](scripts/upload_full_model.py)
 - Dataset upload: [scripts/upload_cpt_dataset.py](scripts/upload_cpt_dataset.py)
 
+## Post-Training Plan
+
+The next training stage should not be another broad CPT pass first. The CPT run already improved Korean knowledge slices and general reasoning, but it damaged Korean hard multiple-choice and some law/accounting extraction formats. The next stage should be targeted post-training with strict eval gates.
+
+1. Korean MCQA remediation SFT: train on KMMLU, KMMLU-hard, MMLU-ProX-lite-ko-style prompts, Korean law/accounting/finance questions, exact option-label answers, and short rationales. Target gates: `kmmlu_hard` from 0.1720 to at least 0.2300, `kmmlu_hard_stem` from 0.1564 to at least 0.2100, `mmlu_prox_lite_ko` from 0.1667 back above the base 0.2585 and target 0.3000.
+2. Korean instruction-following SFT: add Ko-IFEval-style constraints, Korean formatting rules, and refusal/uncertainty examples. Preserve current gains by keeping IFEval prompt loose at or above 0.3346 and BoolQ at or above 0.7902.
+3. Tool and agent SFT: use Korean BFCL-style function calls, terminal/tool-call traces, JSON schema following, and multi-turn task completion. This aligns with Liquid's official LFM2.5 tool/agent benchmark focus.
+4. Preference tuning: run DPO/ORPO/KTO on pairs mined from current eval failures. Prefer correct option extraction, concise Korean answers, valid JSON/tool calls, and explicit uncertainty over hallucination.
+5. Short preservation mix: include a small amount of English/general reasoning and current high-gain Korean Global MMLU examples to avoid losing GSM8K, ARC, BoolQ, and Global MMLU KO gains.
+
+Do RL/GRPO only after the SFT and preference data are reliable. For this model, reliable reward functions are easier for tool-call validity, option correctness, and math final-answer extraction than for open-ended Korean prose quality.
+
 ## Next Evaluation Queue
 
 - Korean language specialization: `kmmlu`, `kmmlu_direct`, `kmmlu_hard`, `kmmlu_cot_hard`
-- Liquid official-style checks: `leaderboard_instruction_following`, `leaderboard_math_hard`, `hendrycks_math`
+- Liquid official-style checks: `leaderboard_instruction_following`, `leaderboard_math_hard`, `hendrycks_math`, MATH500/AIME-style tasks where the harness is stable
 - Tool/agent checks needing separate harness: BFCLv3/v4, Tau2 Telecom/Retail, IFBench, Multi-IF
 - Korean remediation checks: legal multiple-choice, Korean option extraction, tool-call JSON validity
 
