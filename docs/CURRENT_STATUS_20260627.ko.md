@@ -1,6 +1,6 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-28 10:39 KST
+최종 갱신: 2026-06-28 11:00 KST
 작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
@@ -115,11 +115,14 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 
 - steady-state 기준 체크포인트 저장 제외 약 `3.3-3.5 sec/step`
 - 실제 완료: 2026-06-28 10:36 KST 부근
-- 다음 병목: HF model upload와 vLLM 평가
+- HF model upload: 완료
+- uploaded model repo: https://huggingface.co/LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL
+- uploaded sha: `0d0ff67c79be8a4acd613302146c5349beaaf44f`
+- 다음 병목: lm-eval/vLLM 공식 벤치마크 환경 정리와 실행
 
 ## vLLM 평가 준비
 
-평가는 무조건 vLLM으로 한다. 학습은 끝났고 `final_full` 무결성 확인까지 완료했다.
+평가는 무조건 vLLM으로 한다. 학습은 끝났고 `final_full` 무결성 확인, HF 업로드, vLLM TP=8 smoke까지 완료했다.
 
 준비된 파일:
 
@@ -133,12 +136,22 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 
 학습 완료 후 실행 순서:
 
-1. `python scripts/upload_full_model.py`로 model repo에 README와 weights 업로드
-2. `bash scripts/run_lfm2_ko_vllm_smoke.sh`
-3. `TASK_SET=smoke LIMIT=100 bash scripts/run_lfm2_ko_eval_matrix.sh`
-4. `TASK_SET=korean bash scripts/run_lfm2_ko_eval_matrix.sh`
-5. `TASK_SET=regression bash scripts/run_lfm2_ko_eval_matrix.sh`
-6. 결과 요약: `python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix`
+1. 완료: `python scripts/upload_full_model.py`로 model repo에 README와 weights 업로드
+2. 완료: `bash scripts/run_lfm2_ko_vllm_smoke.sh`
+3. 다음: `.vllm-lfm-cu12`에 lm-eval/datasets를 추가하거나 별도 clean eval venv 구성
+4. 다음: `TASK_SET=smoke LIMIT=100 bash scripts/run_lfm2_ko_eval_matrix.sh`
+5. 다음: `TASK_SET=korean bash scripts/run_lfm2_ko_eval_matrix.sh`
+6. 다음: `TASK_SET=regression bash scripts/run_lfm2_ko_eval_matrix.sh`
+7. 결과 요약: `python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix`
+
+vLLM smoke 결과:
+
+- path: `/home/work/.data/lfm2_ko_cpt/evals/20260628_1052_smoke_clean_vllm_smoke`
+- base: TP=8 load/generation 성공
+- CPT: TP=8 load/generation 성공
+- CPT pass: Korean legal, Korean finance, tool-call format, English instruction smoke
+- CPT wiki smoke: 답변은 관련 있었지만 literal keyword `요약` 체크가 false
+- 중요 환경: `.vllm-lfm-cu12`, `PYTHONPATH=`와 `PYTHONNOUSERSITE=1`로 user-site torch 오염 차단 필요
 
 ## Hugging Face Dataset Upload
 
@@ -224,8 +237,8 @@ git status --short
 
 ## 다음 작업
 
-1. `python scripts/upload_full_model.py`로 Hugging Face model repo에 업로드한다.
-2. vLLM smoke/base-vs-CPT 평가를 시작한다.
+1. `.vllm-lfm-cu12`에 lm-eval/datasets를 추가하거나 별도 clean eval venv를 만든다.
+2. `TASK_SET=smoke LIMIT=100 bash scripts/run_lfm2_ko_eval_matrix.sh`로 공개 벤치마크 smoke를 시작한다.
 3. tokenized Parquet shard export가 끝나면 `scripts/upload_cpt_dataset.py --skip-corpus`로 dataset repo에 추가 업로드한다.
 4. 평가 결과를 요약해 model card benchmark table에 반영한다.
 5. 공개 평가 추가 구현 우선순위는 `KMMLU`, `KMMLU-Pro`, `Ko-IFEval`, `Ko-GSM8K`, `Ko-ARC`, 법률 RAG/source QA다.

@@ -28,7 +28,7 @@ Full-parameter Korean continued-pretraining project for [`LiquidAI/LFM2.5-8B-A1B
 
 This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-style knowledge, and terminal/tool-use behavior while preserving the base model's general English and instruction-following ability.
 
-> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint. Public vLLM evaluation is pending and will be added after base-vs-CPT runs finish.
+> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. Public vLLM benchmark evaluation is pending; vLLM smoke loading/generation has passed for both base and CPT.
 
 ## Contents
 
@@ -505,6 +505,22 @@ Legalize-KR은 법령/판례/행정규칙/자치법규를 Markdown과 Git 이력
 - Legalize-KR README 기준 원문은 대한민국 정부 공공저작물이고, 저장소 구조와 메타데이터는 저장소별 MIT 표기를 따른다.
 
 ## Evaluation Plan
+
+## Current vLLM Smoke Check
+
+This is not a benchmark score. It verifies that both the base model and the CPT model load and generate with vLLM tensor parallelism.
+
+- Date: 2026-06-28
+- vLLM environment: local `.vllm-lfm-cu12`, vLLM `0.19.1`, Torch `2.10.0+cu128`
+- Tensor parallel size: 8
+- Max model length: 8192
+- Base model smoke: passed model load and generation
+- CPT model smoke: passed model load and generation
+- Smoke result path: `/home/work/.data/lfm2_ko_cpt/evals/20260628_1052_smoke_clean_vllm_smoke`
+- CPT checks passed: Korean legal, Korean finance, tool-call format, English instruction smoke
+- CPT wiki smoke note: the answer was relevant, but the simple keyword check expected the literal word `요약`, so that specific automatic check is false.
+
+## Public Benchmark Plan
 
 Primary public Korean benchmarks:
 
