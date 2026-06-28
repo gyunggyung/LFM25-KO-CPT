@@ -28,11 +28,51 @@ Full-parameter Korean continued-pretraining project for [`LiquidAI/LFM2.5-8B-A1B
 
 This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-style knowledge, and terminal/tool-use behavior while preserving the base model's general English and instruction-following ability.
 
-> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. vLLM smoke passed, and IFEval, GSM8K limited, and Global MMLU Korean limited evaluations show gains over the base model.
+> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. vLLM evaluation shows strong gains on instruction-following, GSM8K, BoolQ, ARC, and several Korean knowledge subjects, but also regressions on Korean hard MCQA, MMLU-ProX-lite-ko, and some STEM/legal/accounting slices.
+
+## Performance Snapshot
+
+All numbers below are vLLM/lm-eval base-vs-CPT comparisons against `LiquidAI/LFM2.5-8B-A1B`. Higher is better.
+
+### Confirmed Gains
+
+| Benchmark | Metric | Base | CPT | Delta | Relative |
+|---|---|---:|---:|---:|---:|
+| `leaderboard_instruction_following` / `leaderboard_ifeval` | prompt loose | 0.2902 | 0.3457 | +0.0555 | +19.11% |
+| IFEval full | prompt loose | 0.2921 | 0.3216 | +0.0295 | +10.10% |
+| GSM8K full 5-shot | exact_match flexible | 0.4845 | 0.5701 | +0.0856 | +17.67% |
+| GSM8K full 5-shot | exact_match strict | 0.2472 | 0.4617 | +0.2145 | +86.77% |
+| BoolQ full | acc | 0.6544 | 0.7902 | +0.1358 | +20.75% |
+| ARC-Challenge full | acc_norm | 0.3771 | 0.4241 | +0.0469 | +12.44% |
+| PIQA full | acc_norm | 0.7203 | 0.7476 | +0.0272 | +3.78% |
+| Global MMLU KO `medical_genetics` | acc | 0.2900 | 0.3800 | +0.0900 | +31.03% |
+| Global MMLU KO `nutrition` | acc | 0.2549 | 0.3203 | +0.0654 | +25.64% |
+| Global MMLU KO `philosophy` | acc | 0.2669 | 0.3215 | +0.0547 | +20.48% |
+| Global MMLU KO `miscellaneous` | acc | 0.3372 | 0.3921 | +0.0549 | +16.29% |
+| MMLU-Pro economics | exact_match | 0.4277 | 0.4704 | +0.0427 | +9.97% |
+
+### Regressions To Fix
+
+| Benchmark | Metric | Base | CPT | Delta | Relative |
+|---|---|---:|---:|---:|---:|
+| MMLU-ProX Lite KO | exact_match | 0.2585 | 0.1667 | -0.0918 | -35.53% |
+| KMMLU hard | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% |
+| KMMLU hard STEM | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% |
+| Global MMLU KO `professional_medicine` | acc | 0.3235 | 0.2316 | -0.0919 | -28.41% |
+| Global MMLU KO `high_school_statistics` | acc | 0.2870 | 0.1574 | -0.1296 | -45.16% |
+| Global MMLU KO `astronomy` | acc | 0.3421 | 0.2829 | -0.0592 | -17.31% |
+| Global MMLU KO `high_school_computer_science` | acc | 0.3100 | 0.2800 | -0.0300 | -9.68% |
+| MMLU-Pro law `LIMIT=500` | exact_match | 0.1840 | 0.1240 | -0.0600 | -32.61% |
+| Leaderboard Math hard | exact_match | 0.4977 | 0.4275 | -0.0702 | -14.11% |
+
+Interpretation: the CPT run successfully injects Korean-domain knowledge and preserves or improves several general benchmarks, but it is not a finished Korean instruction model. The next post-training stage should target Korean MCQA reliability, option-label extraction, STEM hard questions, legal/accounting reasoning, and preservation of the current IFEval/GSM8K/BoolQ gains.
+
+Likely failure mode: many regressions are not simple "Korean got worse" failures. They cluster around multiple-choice answering, exact answer extraction, option-label discipline, and hard STEM/legal/accounting formats. Open-ended Korean knowledge slices and instruction-following often improve, while Korean MCQA and parser-sensitive exact-match tasks need targeted remediation.
 
 ## Contents
 
 - [English](#english)
+- [Performance Snapshot](#performance-snapshot)
 - [Quick Start](#quick-start)
 - [Colab Example](#colab-example)
 - [Training Configuration](#training-configuration)

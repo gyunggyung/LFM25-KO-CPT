@@ -26,6 +26,37 @@ Full-parameter Korean continued pretraining project for
 - Eval runtime: vLLM `TP=8` for large single runs, `TP=1` one task per GPU for parallel benchmark sweeps
 - Current artifact root: `/home/work/.data/lfm2_ko_cpt`
 
+## Performance Snapshot
+
+All numbers are vLLM/lm-eval base-vs-CPT comparisons against `LiquidAI/LFM2.5-8B-A1B`.
+
+### Best Gains
+
+| Benchmark | Metric | Base | CPT | Delta | Relative |
+|---|---|---:|---:|---:|---:|
+| `leaderboard_instruction_following` / `leaderboard_ifeval` | prompt loose | 0.2902 | 0.3457 | +0.0555 | +19.11% |
+| GSM8K full 5-shot | exact_match flexible | 0.4845 | 0.5701 | +0.0856 | +17.67% |
+| BoolQ full | acc | 0.6544 | 0.7902 | +0.1358 | +20.75% |
+| ARC-Challenge full | acc_norm | 0.3771 | 0.4241 | +0.0469 | +12.44% |
+| Global MMLU KO `medical_genetics` | acc | 0.2900 | 0.3800 | +0.0900 | +31.03% |
+| Global MMLU KO `nutrition` | acc | 0.2549 | 0.3203 | +0.0654 | +25.64% |
+| Global MMLU KO `philosophy` | acc | 0.2669 | 0.3215 | +0.0547 | +20.48% |
+
+### Main Regressions
+
+| Benchmark | Metric | Base | CPT | Delta | Relative |
+|---|---|---:|---:|---:|---:|
+| MMLU-ProX Lite KO | exact_match | 0.2585 | 0.1667 | -0.0918 | -35.53% |
+| KMMLU hard | acc | 0.2015 | 0.1720 | -0.0295 | -14.63% |
+| KMMLU hard STEM | acc | 0.1973 | 0.1564 | -0.0409 | -20.74% |
+| Global MMLU KO `professional_medicine` | acc | 0.3235 | 0.2316 | -0.0919 | -28.41% |
+| Global MMLU KO `high_school_statistics` | acc | 0.2870 | 0.1574 | -0.1296 | -45.16% |
+| Leaderboard Math hard | exact_match | 0.4977 | 0.4275 | -0.0702 | -14.11% |
+
+Short read: Korean knowledge and instruction-following improved in multiple places, but Korean hard multiple-choice and STEM/legal option extraction need a targeted post-training pass before this should be presented as a polished Korean benchmark model.
+
+Likely failure mode: this is closer to a multiple-choice and exact-answer formatting problem than a simple Korean-language regression. The model often improves on Korean knowledge slices and instruction-following, but loses points when it must map reasoning to an exact option label under Korean benchmark prompts.
+
 ## English Summary
 
 This project adapts LiquidAI LFM2.5-8B-A1B to Korean through full-parameter continued pretraining. The data mixture focuses on Korean legal text, finance text, wiki-style knowledge, terminal/tool-call behavior, and general instruction-preserving text. Evaluation is run with vLLM and lm-evaluation-harness against the original base model.
