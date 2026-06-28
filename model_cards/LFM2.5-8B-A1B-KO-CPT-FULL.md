@@ -539,7 +539,14 @@ Evaluation uses EleutherAI lm-evaluation-harness with vLLM tensor parallelism. T
 | inst_level_strict_acc | 0.4221 | 0.4365 | +0.0144 |
 | inst_level_loose_acc | 0.4341 | 0.4628 | +0.0287 |
 
-Ongoing checks: GSM8K 5-shot limited regression and Global MMLU Korean will be added after the vLLM runs finish.
+GSM8K 5-shot `LIMIT=200` limited regression check:
+
+| Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta |
+|---|---:|---:|---:|
+| exact_match strict-match | 0.2600 | 0.4250 | +0.1650 |
+| exact_match flexible-extract | 0.4250 | 0.4950 | +0.0700 |
+
+Note: GSM8K above is a limited 200-sample run and should be treated as an early regression check, not a final public benchmark score. Global MMLU Korean is running and will be added after completion.
 
 ## Public Benchmark Plan
 

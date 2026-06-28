@@ -1,6 +1,6 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-28 11:40 KST
+최종 갱신: 2026-06-28 11:46 KST
 작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
@@ -120,7 +120,8 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - uploaded sha: `0d0ff67c79be8a4acd613302146c5349beaaf44f`
 - vLLM/lm-eval 환경 보강: 완료
 - 공식 IFEval 전체 541문항 base-vs-CPT 평가: 완료
-- 다음 병목: GSM8K 회귀 평가와 Global MMLU Korean 평가
+- GSM8K 5-shot `LIMIT=200` 회귀 평가: 완료, CPT 상승
+- Global MMLU Korean `LIMIT=500`: 진행 중
 
 ## vLLM 평가 준비
 
@@ -143,8 +144,8 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 3. 완료: `.vllm-lfm-cu12`에 `lm-eval==0.4.11`, `datasets==4.3.0`, `ray`, `langdetect`, `immutabledict` 추가
 4. 완료: `TASKS=ifeval LIMIT=100` 방향 확인 평가
 5. 완료: `TASKS=ifeval` 전체 541문항 평가
-6. 진행 중: `TASKS=gsm8k LIMIT=200 NUM_FEWSHOT=5` 회귀 평가
-7. 다음: `TASKS=global_mmlu_full_ko LIMIT=500` 한국어 지식 평가
+6. 완료: `TASKS=gsm8k LIMIT=200 NUM_FEWSHOT=5` 회귀 평가
+7. 진행 중: `TASKS=global_mmlu_full_ko LIMIT=500` 한국어 지식 평가
 8. 결과 요약: `python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix`
 
 
@@ -158,6 +159,14 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 | instruction loose | 0.4341 | 0.4628 | +0.0287 |
 
 방향 확인용 IFEval `LIMIT=100`도 전 항목 상승했다. 전체 점수는 위 표를 우선한다.
+
+
+GSM8K 5-shot `LIMIT=200` 결과 (`20260628_023657_gsm8k_200_vllm_vllm_matrix`, vLLM TP=8, 방향 확인용 limited run):
+
+| metric | base | CPT | delta |
+|---|---:|---:|---:|
+| exact_match strict | 0.2600 | 0.4250 | +0.1650 |
+| exact_match flexible | 0.4250 | 0.4950 | +0.0700 |
 
 vLLM smoke 결과:
 
