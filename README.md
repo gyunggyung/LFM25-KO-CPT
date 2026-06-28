@@ -102,6 +102,14 @@ Summarize an eval directory:
 python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix
 ```
 
+Queue-based refill loop:
+
+```bash
+cd /home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt
+tmux new-session -d -s lfm2ko_eval_queue_20260628 \
+  'POLL_SECONDS=60 bash scripts/run_lfm2_ko_eval_queue.sh configs/eval_queue_global_mmlu_ko_refill_20260628.txt'
+```
+
 ## Important Files
 
 - Data sources: [configs/ko_cpt_sources_20260627.json](configs/ko_cpt_sources_20260627.json)
@@ -112,6 +120,8 @@ python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<
 - vLLM eval runner: [scripts/run_lfm2_ko_vllm_lm_eval.sh](scripts/run_lfm2_ko_vllm_lm_eval.sh)
 - Base-vs-CPT matrix runner: [scripts/run_lfm2_ko_eval_matrix.sh](scripts/run_lfm2_ko_eval_matrix.sh)
 - Parallel eval runner: [scripts/run_lfm2_ko_parallel_eval_1gpu.sh](scripts/run_lfm2_ko_parallel_eval_1gpu.sh)
+- Queue refill runner: [scripts/run_lfm2_ko_eval_queue.sh](scripts/run_lfm2_ko_eval_queue.sh)
+- Current eval queue: [configs/eval_queue_global_mmlu_ko_refill_20260628.txt](configs/eval_queue_global_mmlu_ko_refill_20260628.txt)
 - Model upload: [scripts/upload_full_model.py](scripts/upload_full_model.py)
 - Dataset upload: [scripts/upload_cpt_dataset.py](scripts/upload_cpt_dataset.py)
 
