@@ -574,6 +574,17 @@ Additional vLLM checks:
 | `global_mmlu_full_ko_high_school_macroeconomics` full | acc | 0.2436 | 0.2846 | +0.0410 | +16.83% | full subject |
 | `global_mmlu_full_ko_virology` full | acc | 0.2831 | 0.3795 | +0.0964 | +34.05% | full subject |
 | `global_mmlu_full_ko_world_religions` full | acc | 0.3450 | 0.4854 | +0.1404 | +40.70% | full subject |
+| `hellaswag` `LIMIT=1000` | acc | 0.4320 | 0.4430 | +0.0110 | +2.55% | limited |
+| `hellaswag` `LIMIT=1000` | acc_norm | 0.4330 | 0.5110 | +0.0780 | +18.01% | limited |
+| `winogrande` full | acc | 0.5643 | 0.5699 | +0.0055 | +0.98% | full task |
+| `piqa` full | acc | 0.7350 | 0.7541 | +0.0190 | +2.59% | full task |
+| `piqa` full | acc_norm | 0.7209 | 0.7465 | +0.0256 | +3.55% | full task |
+| `boolq` full | acc | 0.6544 | 0.7902 | +0.1358 | +20.75% | full task |
+| `global_mmlu_full_ko_high_school_geography` full | acc | 0.3384 | 0.3434 | +0.0051 | +1.49% | full subject |
+| `global_mmlu_full_ko_public_relations` full | acc | 0.2273 | 0.3000 | +0.0727 | +32.00% | full subject |
+| `global_mmlu_full_ko_management` full | acc | 0.3107 | 0.4369 | +0.1262 | +40.63% | full subject |
+| `global_mmlu_full_ko_human_sexuality` full | acc | 0.2672 | 0.3740 | +0.1069 | +40.00% | full subject |
+| `global_mmlu_full_ko_international_law` full | acc | 0.3223 | 0.4215 | +0.0992 | +30.77% | full subject |
 
 The limited checks are useful for regression tracking, but they should not be read as final leaderboard-quality numbers. The model improves strongly on several reasoning and instruction-following checks, while law-focused MMLU-Pro and MMLU-ProX-lite-ko need targeted remediation.
 
