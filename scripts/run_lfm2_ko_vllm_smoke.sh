@@ -32,6 +32,10 @@ export HF_HUB_ENABLE_HF_TRANSFER="${HF_HUB_ENABLE_HF_TRANSFER:-1}"
 export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
 export VLLM_WORKER_MULTIPROC_METHOD="${VLLM_WORKER_MULTIPROC_METHOD:-spawn}"
 
+VLLM_SITE_PACKAGES="$VLLM_ENV/lib/python3.12/site-packages"
+VLLM_CUDA_LIBS="$VLLM_SITE_PACKAGES/nvidia/cu13/lib:$VLLM_SITE_PACKAGES/nvidia/nccl/lib:$VLLM_SITE_PACKAGES/nvidia/nvshmem/lib:$VLLM_SITE_PACKAGES/nvidia/cudnn/lib:$VLLM_SITE_PACKAGES/nvidia/cusparselt/lib"
+export LD_LIBRARY_PATH="$VLLM_CUDA_LIBS:${LD_LIBRARY_PATH:-}"
+
 echo "time_utc: $(date -u '+%F %T UTC')"
 echo "time_kst: $(TZ=Asia/Seoul date '+%F %T KST')"
 echo "output_dir: $OUTPUT_DIR"

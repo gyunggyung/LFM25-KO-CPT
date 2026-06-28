@@ -44,6 +44,12 @@ export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
 export VLLM_WORKER_MULTIPROC_METHOD="${VLLM_WORKER_MULTIPROC_METHOD:-spawn}"
 export NCCL_TIMEOUT="${NCCL_TIMEOUT:-3600}"
 
+# vLLM in .vllm-lfm is built against the CUDA 13 runtime wheels. The dynamic
+# loader does not always see those wheel libraries unless we expose them here.
+VLLM_SITE_PACKAGES="$VLLM_ENV/lib/python3.12/site-packages"
+VLLM_CUDA_LIBS="$VLLM_SITE_PACKAGES/nvidia/cu13/lib:$VLLM_SITE_PACKAGES/nvidia/nccl/lib:$VLLM_SITE_PACKAGES/nvidia/nvshmem/lib:$VLLM_SITE_PACKAGES/nvidia/cudnn/lib:$VLLM_SITE_PACKAGES/nvidia/cusparselt/lib"
+export LD_LIBRARY_PATH="$VLLM_CUDA_LIBS:${LD_LIBRARY_PATH:-}"
+
 # lm_eval is installed in the user/Unsloth environment while vLLM is installed
 # in .vllm-lfm. Keep this mixed PYTHONPATH until the eval environment is rebuilt.
 export PYTHONPATH="$LIQUID_ENV/lib/python3.12/site-packages:/home/work/.local/lib/python3.12/site-packages:${PYTHONPATH:-}"
