@@ -121,7 +121,8 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - vLLM/lm-eval 환경 보강: 완료
 - 공식 IFEval 전체 541문항 base-vs-CPT 평가: 완료
 - GSM8K 5-shot `LIMIT=200` 회귀 평가: 완료, CPT 상승
-- Global MMLU Korean `LIMIT=500`: 진행 중
+- Global MMLU Korean `LIMIT=500`: 완료, CPT 전체 점수 상승
+- 추가 vLLM 평가: 8개 GPU에 1개 작업씩 병렬 진행 중
 
 ## vLLM 평가 준비
 
@@ -132,6 +133,7 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - `docs/LFM2_KO_VLLM_EVAL_RUNBOOK_20260628.ko.md`
 - `scripts/run_lfm2_ko_vllm_lm_eval.sh`
 - `scripts/run_lfm2_ko_eval_matrix.sh`
+- `scripts/run_lfm2_ko_parallel_eval_1gpu.sh`
 - `scripts/run_lfm2_ko_vllm_smoke.sh`
 - `scripts/vllm_lfm2_ko_smoke.py`
 - `scripts/summarize_lm_eval_results.py`
@@ -145,28 +147,78 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 4. 완료: `TASKS=ifeval LIMIT=100` 방향 확인 평가
 5. 완료: `TASKS=ifeval` 전체 541문항 평가
 6. 완료: `TASKS=gsm8k LIMIT=200 NUM_FEWSHOT=5` 회귀 평가
-7. 진행 중: `TASKS=global_mmlu_full_ko LIMIT=500` 한국어 지식 평가
+7. 완료: `TASKS=global_mmlu_full_ko LIMIT=500` 한국어 지식 평가
 8. 결과 요약: `python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix`
+9. 진행 중: `TP=1`, `CUDA_VISIBLE_DEVICES=0..7`로 8개 vLLM 평가 병렬 실행
 
 
 공식 IFEval 전체 결과 (`20260628_022743_ifeval_full_vllm_vllm_matrix`, vLLM TP=8, limit 없음):
 
-| metric | base | CPT | delta |
-|---|---:|---:|---:|
-| prompt strict | 0.2810 | 0.2976 | +0.0166 |
-| prompt loose | 0.2921 | 0.3216 | +0.0295 |
-| instruction strict | 0.4221 | 0.4365 | +0.0144 |
-| instruction loose | 0.4341 | 0.4628 | +0.0287 |
+| metric | base | CPT | delta | relative |
+|---|---:|---:|---:|---:|
+| prompt strict | 0.2810 | 0.2976 | +0.0166 | +5.91% |
+| prompt loose | 0.2921 | 0.3216 | +0.0295 | +10.10% |
+| instruction strict | 0.4221 | 0.4365 | +0.0144 | +3.41% |
+| instruction loose | 0.4341 | 0.4628 | +0.0287 | +6.61% |
 
 방향 확인용 IFEval `LIMIT=100`도 전 항목 상승했다. 전체 점수는 위 표를 우선한다.
 
 
 GSM8K 5-shot `LIMIT=200` 결과 (`20260628_023657_gsm8k_200_vllm_vllm_matrix`, vLLM TP=8, 방향 확인용 limited run):
 
-| metric | base | CPT | delta |
-|---|---:|---:|---:|
-| exact_match strict | 0.2600 | 0.4250 | +0.1650 |
-| exact_match flexible | 0.4250 | 0.4950 | +0.0700 |
+| metric | base | CPT | delta | relative |
+|---|---:|---:|---:|---:|
+| exact_match strict | 0.2600 | 0.4250 | +0.1650 | +63.46% |
+| exact_match flexible | 0.4250 | 0.4950 | +0.0700 | +16.47% |
+
+
+Global MMLU Korean `LIMIT=500` 결과 (`20260628_024442_global_mmlu_ko_500_vllm_vllm_matrix`, vLLM TP=8, 방향 확인용 limited run):
+
+| metric | base | CPT | delta | relative |
+|---|---:|---:|---:|---:|
+| global_mmlu_full_ko acc | 0.2803 | 0.3086 | +0.0283 | +10.10% |
+| humanities acc | 0.2784 | 0.3022 | +0.0238 | +8.55% |
+| other acc | 0.2914 | 0.3385 | +0.0471 | +16.16% |
+| social_sciences acc | 0.2911 | 0.3404 | +0.0493 | +16.93% |
+| stem acc | 0.2623 | 0.2591 | -0.0032 | -1.22% |
+
+현재 추가 vLLM 병렬 평가 (`20260628_030217_parallel_1gpu`, GPU 0-7, 각 작업 TP=1):
+
+실행 스크립트:
+
+```bash
+cd /home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt
+RUN_ID_BASE=20260628_030217_parallel_1gpu bash scripts/run_lfm2_ko_parallel_eval_1gpu.sh
+```
+
+| GPU | task | limit | few-shot | status |
+|---:|---|---:|---:|---|
+| 0 | `mmlu_pro` | 500 | default | running |
+| 1 | `mmlu_pro_law` | 500 | default | running |
+| 2 | `mmlu_pro_economics` | 500 | default | running |
+| 3 | `mmlu_prox_lite_ko` | 500 | default | running |
+| 4 | `arc_challenge` | 500 | default | running |
+| 5 | `gpqa_main_zeroshot` | 200 | default | running |
+| 6 | `gsm8k` | full | 5 | running |
+| 7 | `aime24` | full | default | running |
+
+추가 완료 결과:
+
+| task | metric | base | CPT | delta | relative | note |
+|---|---|---:|---:|---:|---:|---|
+| `arc_challenge` `LIMIT=500` | acc | 0.3600 | 0.4020 | +0.0420 | +11.67% | limited run |
+| `arc_challenge` `LIMIT=500` | acc_norm | 0.3760 | 0.4140 | +0.0380 | +10.11% | limited run |
+| `gsm8k` full 5-shot | exact_match strict | 0.2472 | 0.4617 | +0.2145 | +86.77% | full task |
+| `gsm8k` full 5-shot | exact_match flexible | 0.4845 | 0.5701 | +0.0856 | +17.67% | full task |
+| `mmlu_pro_economics` `LIMIT=500` | exact_match | 0.4420 | 0.4900 | +0.0480 | +10.86% | limited run |
+| `mmlu_pro_law` `LIMIT=500` | exact_match | 0.1840 | 0.1240 | -0.0600 | -32.61% | limited run |
+| `mmlu_prox_lite_ko` `LIMIT=500` | exact_match | 0.2585 | 0.1667 | -0.0918 | -35.51% | limited run |
+
+실패/교체:
+
+- `gpqa_main_zeroshot`: `Idavidrein/gpqa` gated dataset 접근 실패로 중단.
+- `aime24`: vLLM/lm-eval 조합에서 empty decoder prompt 오류로 중단.
+- 위 두 작업과 완료된 짧은 작업이 만든 빈 GPU는 Global MMLU Korean 세부 과목 full 평가로 다시 채웠다.
 
 vLLM smoke 결과:
 

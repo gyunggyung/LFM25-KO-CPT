@@ -28,7 +28,7 @@ Full-parameter Korean continued-pretraining project for [`LiquidAI/LFM2.5-8B-A1B
 
 This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-style knowledge, and terminal/tool-use behavior while preserving the base model's general English and instruction-following ability.
 
-> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. vLLM TP=8 smoke passed, and full IFEval evaluation shows instruction-following gains over the base model.
+> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. vLLM smoke passed, and IFEval, GSM8K limited, and Global MMLU Korean limited evaluations show gains over the base model.
 
 ## Contents
 
@@ -532,21 +532,45 @@ Evaluation uses EleutherAI lm-evaluation-harness with vLLM tensor parallelism. T
 - Max model length: 8192
 - Result path: `/home/work/.data/lfm2_ko_cpt/evals/20260628_022743_ifeval_full_vllm_vllm_matrix`
 
-| Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta |
-|---|---:|---:|---:|
-| prompt_level_strict_acc | 0.2810 | 0.2976 | +0.0166 |
-| prompt_level_loose_acc | 0.2921 | 0.3216 | +0.0295 |
-| inst_level_strict_acc | 0.4221 | 0.4365 | +0.0144 |
-| inst_level_loose_acc | 0.4341 | 0.4628 | +0.0287 |
+| Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta | Relative |
+|---|---:|---:|---:|---:|
+| prompt_level_strict_acc | 0.2810 | 0.2976 | +0.0166 | +5.91% |
+| prompt_level_loose_acc | 0.2921 | 0.3216 | +0.0295 | +10.10% |
+| inst_level_strict_acc | 0.4221 | 0.4365 | +0.0144 | +3.41% |
+| inst_level_loose_acc | 0.4341 | 0.4628 | +0.0287 | +6.61% |
 
 GSM8K 5-shot `LIMIT=200` limited regression check:
 
-| Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta |
-|---|---:|---:|---:|
-| exact_match strict-match | 0.2600 | 0.4250 | +0.1650 |
-| exact_match flexible-extract | 0.4250 | 0.4950 | +0.0700 |
+| Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta | Relative |
+|---|---:|---:|---:|---:|
+| exact_match strict-match | 0.2600 | 0.4250 | +0.1650 | +63.46% |
+| exact_match flexible-extract | 0.4250 | 0.4950 | +0.0700 | +16.47% |
 
-Note: GSM8K above is a limited 200-sample run and should be treated as an early regression check, not a final public benchmark score. Global MMLU Korean is running and will be added after completion.
+Global MMLU Korean `LIMIT=500` limited check:
+
+| Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta | Relative |
+|---|---:|---:|---:|---:|
+| global_mmlu_full_ko acc | 0.2803 | 0.3086 | +0.0283 | +10.10% |
+| humanities acc | 0.2784 | 0.3022 | +0.0238 | +8.55% |
+| other acc | 0.2914 | 0.3385 | +0.0471 | +16.16% |
+| social_sciences acc | 0.2911 | 0.3404 | +0.0493 | +16.93% |
+| stem acc | 0.2623 | 0.2591 | -0.0032 | -1.22% |
+
+Note: GSM8K and Global MMLU Korean above are limited runs and should be treated as early regression checks, not final public benchmark scores. Additional vLLM evaluations are running with one task per GPU.
+
+Additional vLLM checks:
+
+| Task | Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta | Relative | Note |
+|---|---|---:|---:|---:|---:|---|
+| `arc_challenge` `LIMIT=500` | acc | 0.3600 | 0.4020 | +0.0420 | +11.67% | limited |
+| `arc_challenge` `LIMIT=500` | acc_norm | 0.3760 | 0.4140 | +0.0380 | +10.11% | limited |
+| `gsm8k` full 5-shot | exact_match strict | 0.2472 | 0.4617 | +0.2145 | +86.77% | full task |
+| `gsm8k` full 5-shot | exact_match flexible | 0.4845 | 0.5701 | +0.0856 | +17.67% | full task |
+| `mmlu_pro_economics` `LIMIT=500` | exact_match | 0.4420 | 0.4900 | +0.0480 | +10.86% | limited |
+| `mmlu_pro_law` `LIMIT=500` | exact_match | 0.1840 | 0.1240 | -0.0600 | -32.61% | limited |
+| `mmlu_prox_lite_ko` `LIMIT=500` | exact_match | 0.2585 | 0.1667 | -0.0918 | -35.51% | limited |
+
+The limited checks are useful for regression tracking, but they should not be read as final leaderboard-quality numbers. The model improves strongly on several reasoning and instruction-following checks, while law-focused MMLU-Pro and MMLU-ProX-lite-ko need targeted remediation.
 
 ## Public Benchmark Plan
 
