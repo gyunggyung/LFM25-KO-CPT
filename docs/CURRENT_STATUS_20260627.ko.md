@@ -225,6 +225,19 @@ RUN_ID_BASE=20260628_030217_parallel_1gpu bash scripts/run_lfm2_ko_parallel_eval
 - `aime24`: vLLM/lm-eval 조합에서 empty decoder prompt 오류로 중단.
 - 위 두 작업과 완료된 짧은 작업이 만든 빈 GPU는 Global MMLU Korean 세부 과목 full 평가로 다시 채웠다.
 
+추가로 계속 돌릴 평가 기준:
+
+- Liquid LFM2.5-8B-A1B 공식 축: knowledge, instruction following, math, tool use, agentic workflows.
+  - 공식 링크: https://www.liquid.ai/blog/lfm2-5-8b-a1b
+  - 공식 표에 있는 주요 이름: AA-Omniscience, IFEval, IFBench, Multi-IF, MATH500, AIME25, AIME26, BFCLv3, BFCLv4, Tau2 Telecom, Tau2 Retail.
+  - 지금 바로 lm-eval/vLLM로 계속 가능한 것: `ifeval`, `leaderboard_instruction_following`, `leaderboard_math_hard`, `hendrycks_math`, `gsm8k`, `mmlu_pro`, `arc_challenge`, `hellaswag`, `winogrande`, `piqa`, `boolq`.
+  - 별도 harness가 필요한 것: BFCLv3/v4, Tau2 Telecom/Retail, IFBench/Multi-IF, AA-Omniscience.
+- Liquid LFM2.5-1.2B-JP-202606식 언어 특화 축: knowledge, instruction following, math, code, tool use, domain average.
+  - 공식 링크: https://huggingface.co/LiquidAI/LFM2.5-1.2B-JP-202606
+  - JP 표 기준 이름: JMMLU-ProX, JMMLU, JCulture, JGPQA, J-MIFEval, JFBench, J-GSM8K, J-MATH500, JHumanEval+, J-BFCLv3.
+  - 한국어 대응 우선순위: `kmmlu`, `kmmlu_direct`, `kmmlu_hard`, `kmmlu_cot_hard`, Ko-IFEval, Ko-GSM8K, Korean MATH500식 세트, Korean HumanEval/MBPP식 코드 세트, Korean BFCL식 tool-call 세트.
+  - 지금 바로 lm-eval/vLLM로 가능한 것: `kmmlu`, `kmmlu_direct`, `kmmlu_hard`, `kmmlu_cot_hard`, `global_mmlu_full_ko`, 세부 과목 full 평가.
+
 vLLM smoke 결과:
 
 - path: `/home/work/.data/lfm2_ko_cpt/evals/20260628_1052_smoke_clean_vllm_smoke`
