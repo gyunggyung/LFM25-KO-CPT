@@ -216,6 +216,8 @@ RUN_ID_BASE=20260628_030217_parallel_1gpu bash scripts/run_lfm2_ko_parallel_eval
 | `global_mmlu_full_ko_professional_law` full | acc | 0.2581 | 0.2595 | +0.0014 | +0.54% | full subject |
 | `global_mmlu_full_ko_professional_accounting` full | acc | 0.2730 | 0.2340 | -0.0390 | -14.29% | full subject |
 | `global_mmlu_full_ko_high_school_macroeconomics` full | acc | 0.2436 | 0.2846 | +0.0410 | +16.83% | full subject |
+| `global_mmlu_full_ko_virology` full | acc | 0.2831 | 0.3795 | +0.0964 | +34.05% | full subject |
+| `global_mmlu_full_ko_world_religions` full | acc | 0.3450 | 0.4854 | +0.1404 | +40.70% | full subject |
 
 실패/교체:
 
