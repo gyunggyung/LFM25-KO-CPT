@@ -28,7 +28,7 @@ Full-parameter Korean continued-pretraining project for [`LiquidAI/LFM2.5-8B-A1B
 
 This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-style knowledge, and terminal/tool-use behavior while preserving the base model's general English and instruction-following ability.
 
-> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. Public vLLM benchmark evaluation is pending; vLLM smoke loading/generation has passed for both base and CPT.
+> Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. vLLM TP=8 smoke passed, and full IFEval evaluation shows instruction-following gains over the base model.
 
 ## Contents
 
@@ -519,6 +519,27 @@ This is not a benchmark score. It verifies that both the base model and the CPT 
 - Smoke result path: `/home/work/.data/lfm2_ko_cpt/evals/20260628_1052_smoke_clean_vllm_smoke`
 - CPT checks passed: Korean legal, Korean finance, tool-call format, English instruction smoke
 - CPT wiki smoke note: the answer was relevant, but the simple keyword check expected the literal word `요약`, so that specific automatic check is false.
+
+
+## Current vLLM Benchmark Results
+
+Evaluation uses EleutherAI lm-evaluation-harness with vLLM tensor parallelism. The IFEval run below is the full 541-prompt public task, not a limited smoke sample.
+
+- Date: 2026-06-28
+- Task: `ifeval`
+- Runner: `lm_eval==0.4.11`, `vllm==0.19.1`, Torch `2.10.0+cu128`
+- Tensor parallel size: 8
+- Max model length: 8192
+- Result path: `/home/work/.data/lfm2_ko_cpt/evals/20260628_022743_ifeval_full_vllm_vllm_matrix`
+
+| Metric | LiquidAI/LFM2.5-8B-A1B | LFM2.5-8B-A1B-KO-CPT-FULL | Delta |
+|---|---:|---:|---:|
+| prompt_level_strict_acc | 0.2810 | 0.2976 | +0.0166 |
+| prompt_level_loose_acc | 0.2921 | 0.3216 | +0.0295 |
+| inst_level_strict_acc | 0.4221 | 0.4365 | +0.0144 |
+| inst_level_loose_acc | 0.4341 | 0.4628 | +0.0287 |
+
+Ongoing checks: GSM8K 5-shot limited regression and Global MMLU Korean will be added after the vLLM runs finish.
 
 ## Public Benchmark Plan
 

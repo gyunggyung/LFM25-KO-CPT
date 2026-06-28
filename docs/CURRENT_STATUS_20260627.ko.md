@@ -1,6 +1,6 @@
 # LFM2.5 KO CPT 현재 상태
 
-최종 갱신: 2026-06-28 11:00 KST
+최종 갱신: 2026-06-28 11:40 KST
 작업 repo: `/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt`
 산출물 root: `/home/work/.data/lfm2_ko_cpt`
 
@@ -118,7 +118,9 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 - HF model upload: 완료
 - uploaded model repo: https://huggingface.co/LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL
 - uploaded sha: `0d0ff67c79be8a4acd613302146c5349beaaf44f`
-- 다음 병목: lm-eval/vLLM 공식 벤치마크 환경 정리와 실행
+- vLLM/lm-eval 환경 보강: 완료
+- 공식 IFEval 전체 541문항 base-vs-CPT 평가: 완료
+- 다음 병목: GSM8K 회귀 평가와 Global MMLU Korean 평가
 
 ## vLLM 평가 준비
 
@@ -138,11 +140,24 @@ bash lfm2_ko_cpt/scripts/status_lfm2_ko_cpt.sh
 
 1. 완료: `python scripts/upload_full_model.py`로 model repo에 README와 weights 업로드
 2. 완료: `bash scripts/run_lfm2_ko_vllm_smoke.sh`
-3. 다음: `.vllm-lfm-cu12`에 lm-eval/datasets를 추가하거나 별도 clean eval venv 구성
-4. 다음: `TASK_SET=smoke LIMIT=100 bash scripts/run_lfm2_ko_eval_matrix.sh`
-5. 다음: `TASK_SET=korean bash scripts/run_lfm2_ko_eval_matrix.sh`
-6. 다음: `TASK_SET=regression bash scripts/run_lfm2_ko_eval_matrix.sh`
-7. 결과 요약: `python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix`
+3. 완료: `.vllm-lfm-cu12`에 `lm-eval==0.4.11`, `datasets==4.3.0`, `ray`, `langdetect`, `immutabledict` 추가
+4. 완료: `TASKS=ifeval LIMIT=100` 방향 확인 평가
+5. 완료: `TASKS=ifeval` 전체 541문항 평가
+6. 진행 중: `TASKS=gsm8k LIMIT=200 NUM_FEWSHOT=5` 회귀 평가
+7. 다음: `TASKS=global_mmlu_full_ko LIMIT=500` 한국어 지식 평가
+8. 결과 요약: `python scripts/summarize_lm_eval_results.py /home/work/.data/lfm2_ko_cpt/evals/<RUN_ID>_vllm_matrix`
+
+
+공식 IFEval 전체 결과 (`20260628_022743_ifeval_full_vllm_vllm_matrix`, vLLM TP=8, limit 없음):
+
+| metric | base | CPT | delta |
+|---|---:|---:|---:|
+| prompt strict | 0.2810 | 0.2976 | +0.0166 |
+| prompt loose | 0.2921 | 0.3216 | +0.0295 |
+| instruction strict | 0.4221 | 0.4365 | +0.0144 |
+| instruction loose | 0.4341 | 0.4628 | +0.0287 |
+
+방향 확인용 IFEval `LIMIT=100`도 전 항목 상승했다. 전체 점수는 위 표를 우선한다.
 
 vLLM smoke 결과:
 

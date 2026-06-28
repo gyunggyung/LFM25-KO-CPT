@@ -17,7 +17,7 @@ def iter_result_files(root: Path) -> list[Path]:
     return sorted({path.resolve() for path in candidates if path.is_file()})
 
 
-def metric_value(metrics: dict[str, Any]) -> tuple[str, Any] | None:
+def metric_values(metrics: dict[str, Any]) -> list[tuple[str, Any]]:
     preferred = (
         "exact_match,strict-match",
         "exact_match",
@@ -28,43 +28,57 @@ def metric_value(metrics: dict[str, Any]) -> tuple[str, Any] | None:
         "f1,none",
         "f1",
     )
+    rows: list[tuple[str, Any]] = []
     for key in preferred:
         if key in metrics and not key.endswith("_stderr"):
-            return key, metrics[key]
+            rows.append((key, metrics[key]))
     for key, value in metrics.items():
-        if key.endswith("_stderr") or key == "alias":
+        if "_stderr" in key or key == "alias":
             continue
         if isinstance(value, (int, float)):
-            return key, value
-    return None
+            rows.append((key, value))
+    deduped: list[tuple[str, Any]] = []
+    seen: set[str] = set()
+    for key, value in rows:
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append((key, value))
+    return deduped
+
+
+def model_name_for_result(root: Path, result_file: Path, payload: dict[str, Any]) -> str:
+    config = payload.get("config", {})
+    metadata = payload.get("metadata", {})
+    if metadata.get("model_name"):
+        return metadata["model_name"]
+    if config.get("model_name"):
+        return config["model_name"]
+    try:
+        rel_parts = result_file.relative_to(root).parts
+    except ValueError:
+        rel_parts = ()
+    if rel_parts:
+        return rel_parts[0]
+    return config.get("model") or result_file.parent.name
 
 
 def collect(root: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for result_file in iter_result_files(root):
         payload = json.loads(result_file.read_text(encoding="utf-8"))
-        config = payload.get("config", {})
-        metadata = payload.get("metadata", {})
-        model_name = (
-            metadata.get("model_name")
-            or config.get("model_name")
-            or config.get("model")
-            or result_file.parent.name
-        )
+        model_name = model_name_for_result(root, result_file, payload)
         for task, metrics in payload.get("results", {}).items():
-            selected = metric_value(metrics)
-            if selected is None:
-                continue
-            metric, value = selected
-            rows.append(
-                {
-                    "model": model_name,
-                    "task": task,
-                    "metric": metric,
-                    "value": value,
-                    "result_file": str(result_file),
-                }
-            )
+            for metric, value in metric_values(metrics):
+                rows.append(
+                    {
+                        "model": model_name,
+                        "task": task,
+                        "metric": metric,
+                        "value": value,
+                        "result_file": str(result_file),
+                    }
+                )
     return rows
 
 

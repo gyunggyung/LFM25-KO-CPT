@@ -5,7 +5,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK_DIR="$ROOT_DIR/lfm2_ko_cpt"
 DATA_ROOT="${DATA_ROOT:-/home/work/.data/lfm2_ko_cpt}"
 VLLM_ENV="${VLLM_ENV:-$ROOT_DIR/.vllm-lfm-cu12}"
-LIQUID_ENV="${LIQUID_ENV:-$ROOT_DIR/.liquid-sft-env}"
 
 MODEL_PATH="${MODEL_PATH:-$DATA_ROOT/models/LFM2.5-8B-A1B-KO-CPT-FULL-20260628_lfm25_8b_ko_cpt_full_lfmstyle/final_full}"
 MODEL_NAME="${MODEL_NAME:-lfm25_8b_a1b_ko_cpt_full}"
@@ -23,10 +22,6 @@ LOG_SAMPLES="${LOG_SAMPLES:-1}"
 
 if [ ! -x "$VLLM_ENV/bin/python" ]; then
   echo "missing vLLM virtualenv python: $VLLM_ENV/bin/python" >&2
-  exit 2
-fi
-if [ ! -d "$LIQUID_ENV/lib/python3.12/site-packages" ]; then
-  echo "missing Liquid SFT site-packages: $LIQUID_ENV/lib/python3.12/site-packages" >&2
   exit 2
 fi
 if [ ! -e "$MODEL_PATH" ] && [[ "$MODEL_PATH" == /* ]]; then
@@ -50,9 +45,9 @@ VLLM_SITE_PACKAGES="$VLLM_ENV/lib/python3.12/site-packages"
 VLLM_CUDA_LIBS="$VLLM_SITE_PACKAGES/nvidia/cuda_runtime/lib:$VLLM_SITE_PACKAGES/nvidia/cublas/lib:$VLLM_SITE_PACKAGES/nvidia/nccl/lib:$VLLM_SITE_PACKAGES/nvidia/nvshmem/lib:$VLLM_SITE_PACKAGES/nvidia/cudnn/lib:$VLLM_SITE_PACKAGES/nvidia/cusparselt/lib"
 export LD_LIBRARY_PATH="$VLLM_CUDA_LIBS:${LD_LIBRARY_PATH:-}"
 
-# lm_eval is installed outside the vLLM venv. Do not use this runner until the
-# lm-eval/vLLM environment is rebuilt; use the smoke runner first. Keeping the
-# PYTHONPATH disabled here prevents silently importing the wrong torch.
+# Keep vLLM/lm-eval on this clean venv. The parent environment can inject
+# user-site torch or global pip constraints, both of which break vLLM.
+export PIP_CONSTRAINT=""
 export PYTHONNOUSERSITE=1
 export PYTHONPATH=""
 
@@ -68,7 +63,6 @@ CMD=(
   --output_path "$OUTPUT_DIR/$MODEL_NAME"
   --trust_remote_code
   --confirm_run_unsafe_code
-  --metadata "model_name=$MODEL_NAME" "model_path=$MODEL_PATH" "tp=$TP" "max_model_len=$MAX_MODEL_LEN"
 )
 
 if [ -n "$LIMIT" ]; then
