@@ -28,6 +28,25 @@ Full-parameter Korean continued-pretraining project for [`LiquidAI/LFM2.5-8B-A1B
 
 This model is intended to make LFM2.5 stronger at Korean legal, finance, wiki-style knowledge, and terminal/tool-use behavior while preserving the base model's general English and instruction-following ability.
 
+- GitHub: <https://github.com/gyunggyung/LFM25-KO-CPT>
+- SFT follow-up GitHub: <https://github.com/gyunggyung/LFM25-KO-SFT>
+- SFT follow-up model: <https://huggingface.co/LLM-OS-Models/LFM2.5-8B-A1B-KO-SFT>
+- Agentic follow-up model: <https://huggingface.co/LLM-OS-Models/LFM2.5-8B-A1B-KO-Agentic-SFT>
+- Public CPT data:
+  - LFM-style full raw: <https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-KO-CPT-Full-LFMStyle-Raw-20260627>
+  - LFM-style source shards: <https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-KO-CPT-Full-LFMStyle-Shards-20260627>
+  - Raw mix before LFM wrapping: <https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-KO-CPT-Full-Raw-Mix-20260627>
+- Public SFT and Agentic data are indexed on the SFT model card:
+  <https://huggingface.co/LLM-OS-Models/LFM2.5-8B-A1B-KO-SFT>.
+
+Public CPT dataset releases:
+
+| release | size | format | source / purpose |
+|---|---:|---|---|
+| [CPT LFM-style full raw](https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-KO-CPT-Full-LFMStyle-Raw-20260627) | 20.54GB | single LFM-style JSONL | full Korean CPT source after LFM-style wrapping |
+| [CPT LFM-style source shards](https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-KO-CPT-Full-LFMStyle-Shards-20260627) | 26.20GB | source-separated JSONL shards | auditable Korean Wiki, finance, legal, legal RAG/bar-answer, terminal/tool shards |
+| [CPT raw mix before LFM wrapping](https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-KO-CPT-Full-Raw-Mix-20260627) | 4.10GB | raw JSONL | pre-conversion CPT mix for debugging/rebuilding |
+
 > Status: full CPT completed on 2026-06-28. Weights are prepared from the verified `checkpoint-10196` final-step checkpoint and uploaded to Hugging Face. vLLM evaluation shows strong gains on instruction-following, GSM8K, BoolQ, ARC, and several Korean knowledge subjects, but also regressions on Korean hard MCQA, MMLU-ProX-lite-ko, and some STEM/legal/accounting slices.
 
 ## Performance Snapshot
@@ -86,6 +105,10 @@ Likely failure mode: many regressions are not simple "Korean got worse" failures
 ## English
 
 `LFM2.5-8B-A1B-KO-CPT-FULL` is a full fine-tuned Korean CPT checkpoint, not a LoRA adapter. The training objective is text completion over a Korean-heavy corpus, with LFM chat-template formatting applied to instruction, RAG, and tool-use examples.
+
+Training code, source manifests, dataset cards, and runbooks are published at
+<https://github.com/gyunggyung/LFM25-KO-CPT>. The supervised fine-tuning follow-up
+is tracked at <https://github.com/gyunggyung/LFM25-KO-SFT>.
 
 Target strengths:
 
