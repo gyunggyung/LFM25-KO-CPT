@@ -12,6 +12,7 @@ Full-parameter Korean continued pretraining project for
 - Dataset: https://huggingface.co/datasets/LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-DATA
 - Current status / handoff: [docs/CURRENT_STATUS_20260627.ko.md](docs/CURRENT_STATUS_20260627.ko.md)
 - CPT runbook: [docs/LFM2_KO_CPT_RUNBOOK_20260627.ko.md](docs/LFM2_KO_CPT_RUNBOOK_20260627.ko.md)
+- Stage rationale: [docs/CPT_STAGE_RATIONALE_20260629.ko.md](docs/CPT_STAGE_RATIONALE_20260629.ko.md)
 - vLLM eval runbook: [docs/LFM2_KO_VLLM_EVAL_RUNBOOK_20260628.ko.md](docs/LFM2_KO_VLLM_EVAL_RUNBOOK_20260628.ko.md)
 - Evaluation plan: [docs/LFM2_KO_EVAL_PLAN_20260627.ko.md](docs/LFM2_KO_EVAL_PLAN_20260627.ko.md)
 - Model card source: [model_cards/LFM2.5-8B-A1B-KO-CPT-FULL.md](model_cards/LFM2.5-8B-A1B-KO-CPT-FULL.md)
