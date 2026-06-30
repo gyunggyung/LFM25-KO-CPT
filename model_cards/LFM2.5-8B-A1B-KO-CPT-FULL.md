@@ -53,6 +53,19 @@ Public CPT dataset releases:
 
 All numbers below are vLLM/lm-eval base-vs-CPT comparisons against `LiquidAI/LFM2.5-8B-A1B`. Higher is better.
 
+![Base vs KO-CPT benchmark snapshot](./assets/cpt_benchmark_snapshot.png)
+
+For a detailed Korean explanation of the training data, preprocessing,
+full-parameter CPT setup, observed gains, regressions, and follow-up lesson, see
+the GitHub note:
+[CPT 데이터, 학습 방식, 효과 정리](https://github.com/gyunggyung/LFM25-KO-CPT/blob/main/docs/CPT_DATA_TRAINING_EFFECTS_20260630.ko.md).
+
+한국어 요약: 이 CPT는 한국어 위키, 금융/회계, 법령/판례/행정규칙, 법률 QA/RAG,
+변시형 JSON 정답, terminal/tool-use trace를 LFM-style로 전처리해 약 6.493B
+추정 토큰으로 1 epoch full-parameter CPT한 모델입니다. 결과적으로 한국어 지식과
+일부 일반 벤치마크는 상승했지만, KMMLU hard, MMLU-ProX Lite KO, 법률/STEM식
+다지선다와 짧은 정확답 추출은 하락했습니다.
+
 ### Confirmed Gains
 
 | Benchmark | Metric | Base | CPT | Delta | Relative |

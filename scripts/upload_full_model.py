@@ -46,6 +46,10 @@ def parse_args() -> argparse.Namespace:
             "model_cards/LFM2.5-8B-A1B-KO-CPT-FULL.md"
         ),
     )
+    parser.add_argument(
+        "--asset-dir",
+        default="/home/work/.projects/LLM-OS-Models/Terminal/lfm2_ko_cpt/assets",
+    )
     parser.add_argument("--private", action="store_true")
     parser.add_argument("--revision", default=None)
     parser.add_argument("--skip-weights", action="store_true")
@@ -57,6 +61,7 @@ def main() -> None:
     root = Path(args.root_dir)
     model_dir = Path(args.model_dir)
     model_card = Path(args.model_card)
+    asset_dir = Path(args.asset_dir)
     token = read_hf_token(root)
 
     if not model_card.exists():
@@ -75,6 +80,16 @@ def main() -> None:
         revision=args.revision,
         commit_message="Update model card",
     )
+
+    if asset_dir.exists():
+        api.upload_folder(
+            folder_path=str(asset_dir),
+            path_in_repo="assets",
+            repo_id=args.repo_id,
+            repo_type="model",
+            revision=args.revision,
+            commit_message="Upload model card assets",
+        )
 
     if not args.skip_weights:
         api.upload_folder(

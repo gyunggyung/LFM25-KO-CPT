@@ -17,6 +17,7 @@ Full-parameter Korean continued pretraining project for
 - Evaluation plan: [docs/LFM2_KO_EVAL_PLAN_20260627.ko.md](docs/LFM2_KO_EVAL_PLAN_20260627.ko.md)
 - Model card source: [model_cards/LFM2.5-8B-A1B-KO-CPT-FULL.md](model_cards/LFM2.5-8B-A1B-KO-CPT-FULL.md)
 - Dataset card source: [dataset_cards/LFM2.5-8B-A1B-KO-CPT-DATA.md](dataset_cards/LFM2.5-8B-A1B-KO-CPT-DATA.md)
+- Korean detailed data/training/effects note: [docs/CPT_DATA_TRAINING_EFFECTS_20260630.ko.md](docs/CPT_DATA_TRAINING_EFFECTS_20260630.ko.md)
 
 ## Status
 
@@ -30,6 +31,12 @@ Full-parameter Korean continued pretraining project for
 ## Performance Snapshot
 
 All numbers are vLLM/lm-eval base-vs-CPT comparisons against `LiquidAI/LFM2.5-8B-A1B`.
+
+![Base vs KO-CPT benchmark snapshot](assets/cpt_benchmark_snapshot.png)
+
+상세한 한국어 데이터 구성, 전처리 방식, 학습 설정, 효과/한계 해석은
+[CPT 데이터, 학습 방식, 효과 정리](docs/CPT_DATA_TRAINING_EFFECTS_20260630.ko.md)에
+정리했다.
 
 ### Best Gains
 
