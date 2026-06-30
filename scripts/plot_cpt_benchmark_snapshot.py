@@ -22,6 +22,9 @@ SCORES_OUT_PATH = OUT_DIR / "cpt_benchmark_scores.png"
 DELTA_OUT_PATH = OUT_DIR / "cpt_benchmark_delta.png"
 LINKEDIN_SQUARE_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_square.png"
 LINKEDIN_PORTRAIT_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_portrait.png"
+LINKEDIN_SQUARE_EXPLAINED_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_square_explained.png"
+LINKEDIN_PORTRAIT_EXPLAINED_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_portrait_explained.png"
+LINKEDIN_ALL_IN_ONE_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_all_in_one.png"
 LINKEDIN_WIDE_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_wide.png"
 LINKEDIN_HIGHLIGHTS_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_highlights.png"
 LINKEDIN_LIGHT_GRID_OUT_PATH = OUT_DIR / "cpt_benchmark_linkedin_light_grid.png"
@@ -216,6 +219,35 @@ def _add_metric_card(
     )
 
 
+def _add_color_meaning_legend(fig: plt.Figure, y: float, size: float = 0.014) -> None:
+    """Add a compact color key for LinkedIn-ready images."""
+    items = [
+        (CPT, "teal: KO-CPT gain / Korean knowledge"),
+        (GROUP_COLORS["General reasoning"], "blue: general reasoning gain"),
+        (GROUP_COLORS["Instruction"], "purple: instruction-following gain"),
+        (GROUP_COLORS["Reasoning"], "yellow: reasoning subject gain"),
+        (NEG, "red: regression / repair target"),
+        (BASE, "gray: Base score in paired charts"),
+    ]
+    fig.text(0.07, y + 0.055, "Color key", color=TEXT, fontsize=10, weight="bold")
+    for idx, (color, label) in enumerate(items):
+        col = idx % 2
+        row = idx // 2
+        x = 0.07 + col * 0.43
+        yy = y + 0.035 - row * 0.026
+        fig.add_artist(
+            plt.Rectangle(
+                (x, yy),
+                size,
+                size,
+                transform=fig.transFigure,
+                facecolor=color,
+                edgecolor="none",
+            )
+        )
+        fig.text(x + size + 0.010, yy - 0.001, label, color=MUTED, fontsize=8, va="bottom")
+
+
 def _plot_compact_delta(ax: plt.Axes, rows: list[Score], title: str, xlim: tuple[float, float]) -> None:
     y = np.arange(len(rows))
     colors = [GROUP_COLORS[row.group] if row.delta >= 0 else NEG for row in rows]
@@ -228,8 +260,8 @@ def _plot_compact_delta(ax: plt.Axes, rows: list[Score], title: str, xlim: tuple
     ax.set_title(title, loc="left", color=TEXT, fontsize=14, weight="bold", pad=10)
     for idx, row in enumerate(rows):
         value = row.relative
-        x = value + 2.0 if value >= 0 else value - 2.0
-        ha = "left" if value >= 0 else "right"
+        x = value + 2.0
+        ha = "left"
         ax.text(x, idx, f"{value:+.1f}%", color=TEXT, fontsize=8, va="center", ha=ha)
 
 
@@ -277,6 +309,38 @@ def _plot_linkedin_square() -> None:
     fig.savefig(LINKEDIN_SQUARE_OUT_PATH, facecolor=BG, bbox_inches="tight", pad_inches=0.2)
 
 
+def _plot_linkedin_square_explained() -> None:
+    rows = sorted(SCORES, key=lambda row: row.relative)
+    focus = rows[:4] + rows[-8:]
+    fig = plt.figure(figsize=(10, 10), dpi=180)
+    fig.patch.set_facecolor(BG)
+    ax = fig.add_axes([0.24, 0.24, 0.70, 0.45])
+    _style_axis(ax)
+    _plot_compact_delta(ax, focus, "Base vs KO-CPT relative change", (-55, 125))
+    fig.text(0.07, 0.93, "KO-CPT: gains are real, repair target is clear", color=TEXT, fontsize=23, weight="bold")
+    fig.text(
+        0.07,
+        0.885,
+        "Korean continued pretraining improved knowledge/reasoning while exposing exact-choice MCQA weakness.",
+        color=MUTED,
+        fontsize=10.5,
+    )
+    fig.text(
+        0.07,
+        0.852,
+        "Use this as a transparent before/after card: publish the gains and keep the red bars as the next target.",
+        color=MUTED,
+        fontsize=10.5,
+    )
+    _add_metric_card(fig, 0.07, 0.745, 0.20, 0.08, "+20.8%", "BoolQ", CPT)
+    _add_metric_card(fig, 0.30, 0.745, 0.20, 0.08, "+17.7%", "GSM8K", CPT)
+    _add_metric_card(fig, 0.53, 0.745, 0.20, 0.08, "+114.3%", "Business ethics", CPT)
+    _add_metric_card(fig, 0.78, 0.745, 0.18, 0.08, "-35.5%", "MMLU-ProX KO", NEG)
+    _add_color_meaning_legend(fig, y=0.078)
+    fig.text(0.07, 0.030, "Model: LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL", color="#7180A4", fontsize=8)
+    fig.savefig(LINKEDIN_SQUARE_EXPLAINED_OUT_PATH, facecolor=BG, bbox_inches="tight", pad_inches=0.2)
+
+
 def _plot_linkedin_portrait() -> None:
     rows = sorted(SCORES, key=lambda row: row.relative)
     focus = rows[:5] + rows[-9:]
@@ -295,6 +359,97 @@ def _plot_linkedin_portrait() -> None:
     fig.text(0.07, 0.735, "-35.5% MMLU-ProX Lite KO shows the remaining MCQA weakness", color=NEG, fontsize=11, weight="bold")
     fig.text(0.07, 0.055, "Base: LiquidAI/LFM2.5-8B-A1B   CPT: LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL", color="#7180A4", fontsize=8)
     fig.savefig(LINKEDIN_PORTRAIT_OUT_PATH, facecolor=BG, bbox_inches="tight", pad_inches=0.2)
+
+
+def _plot_linkedin_portrait_explained() -> None:
+    rows = sorted(SCORES, key=lambda row: row.relative)
+    focus = rows[:5] + rows[-9:]
+    fig = plt.figure(figsize=(10, 12.5), dpi=180)
+    fig.patch.set_facecolor(BG)
+    ax = fig.add_axes([0.25, 0.23, 0.69, 0.435])
+    _style_axis(ax)
+    _plot_compact_delta(ax, focus, "Relative change vs Base", (-55, 125))
+    fig.text(0.07, 0.94, "Korean CPT worked.", color=TEXT, fontsize=27, weight="bold")
+    fig.text(0.07, 0.905, "Knowledge and reasoning moved up; exact-choice MCQA became the next repair target.", color=MUTED, fontsize=12)
+    fig.text(0.07, 0.875, "This card shows the full tradeoff instead of hiding the red bars.", color=MUTED, fontsize=12)
+    fig.text(0.07, 0.825, "6.493B", color=CPT, fontsize=32, weight="bold")
+    fig.text(0.07, 0.800, "estimated CPT tokens", color=MUTED, fontsize=10)
+    fig.text(0.42, 0.825, "10,196", color=CPT, fontsize=32, weight="bold")
+    fig.text(0.42, 0.800, "full-parameter CPT steps", color=MUTED, fontsize=10)
+    fig.text(0.07, 0.756, "+20.8% BoolQ  |  +17.7% GSM8K  |  +114.3% G-MMLU KO business ethics", color=TEXT, fontsize=10.5)
+    fig.text(0.07, 0.727, "-35.5% MMLU-ProX Lite KO: exact-choice Korean MCQA still needs targeted repair", color=NEG, fontsize=10.5, weight="bold")
+    _add_color_meaning_legend(fig, y=0.078)
+    fig.text(0.07, 0.032, "Base: LiquidAI/LFM2.5-8B-A1B   CPT: LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL", color="#7180A4", fontsize=8)
+    fig.savefig(LINKEDIN_PORTRAIT_EXPLAINED_OUT_PATH, facecolor=BG, bbox_inches="tight", pad_inches=0.2)
+
+
+def _plot_linkedin_all_in_one() -> None:
+    rows = sorted(SCORES, key=lambda row: row.relative)
+    focus = rows[:5] + rows[-10:]
+    fig = plt.figure(figsize=(10, 12.5), dpi=180)
+    fig.patch.set_facecolor(BG)
+
+    fig.text(0.07, 0.945, "Korean CPT: stronger knowledge, clear repair target", color=TEXT, fontsize=23, weight="bold")
+    fig.text(
+        0.07,
+        0.910,
+        "Full-parameter continued pretraining on 6.493B Korean tokens moved broad benchmarks up.",
+        color=MUTED,
+        fontsize=11,
+    )
+    fig.text(
+        0.07,
+        0.882,
+        "The same run exposed exact-choice Korean MCQA as the next focused post-training problem.",
+        color=MUTED,
+        fontsize=11,
+    )
+
+    cards = [
+        ("6.493B", "estimated CPT tokens", CPT),
+        ("10,196", "full CPT steps", CPT),
+        ("+20.8%", "BoolQ", GROUP_COLORS["General reasoning"]),
+        ("+17.7%", "GSM8K", GROUP_COLORS["General reasoning"]),
+        ("+114.3%", "G-MMLU KO business ethics", CPT),
+        ("-35.5%", "MMLU-ProX Lite KO", NEG),
+    ]
+    for i, (value, label, color) in enumerate(cards):
+        col = i % 3
+        row = i // 3
+        x = 0.07 + col * 0.30
+        y = 0.810 - row * 0.095
+        fig.text(x, y, value, color=color, fontsize=25, weight="bold")
+        fig.text(x, y - 0.028, label, color=MUTED, fontsize=8.5)
+
+    ax = fig.add_axes([0.25, 0.250, 0.69, 0.395])
+    _style_axis(ax)
+    _plot_compact_delta(ax, focus, "Base -> KO-CPT: relative benchmark change", (-55, 125))
+
+    fig.text(0.07, 0.188, "Read the colors", color=TEXT, fontsize=11, weight="bold")
+    color_rows = [
+        (CPT, "teal: Korean/domain knowledge gain"),
+        (GROUP_COLORS["General reasoning"], "blue: general reasoning gain"),
+        (GROUP_COLORS["Instruction"], "purple: instruction-following gain"),
+        (NEG, "red: regression / repair target"),
+    ]
+    for idx, (color, label) in enumerate(color_rows):
+        x = 0.07 + (idx % 2) * 0.43
+        y = 0.156 - (idx // 2) * 0.036
+        fig.add_artist(
+            plt.Rectangle((x, y), 0.014, 0.014, transform=fig.transFigure, facecolor=color, edgecolor="none")
+        )
+        fig.text(x + 0.024, y - 0.001, label, color=MUTED, fontsize=8.5, va="bottom")
+
+    fig.text(0.07, 0.070, "Conclusion", color=TEXT, fontsize=11, weight="bold")
+    fig.text(
+        0.07,
+        0.046,
+        "KO-CPT is the representative checkpoint for Korean knowledge transfer; MCQA repair should be small, targeted, and gated.",
+        color=MUTED,
+        fontsize=8.5,
+    )
+    fig.text(0.07, 0.022, "Base: LiquidAI/LFM2.5-8B-A1B   CPT: LLM-OS-Models/LFM2.5-8B-A1B-KO-CPT-FULL", color="#7180A4", fontsize=7.5)
+    fig.savefig(LINKEDIN_ALL_IN_ONE_OUT_PATH, facecolor=BG, bbox_inches="tight", pad_inches=0.2)
 
 
 def _plot_linkedin_wide() -> None:
@@ -644,6 +799,9 @@ def main() -> int:
 
     _plot_linkedin_square()
     _plot_linkedin_portrait()
+    _plot_linkedin_square_explained()
+    _plot_linkedin_portrait_explained()
+    _plot_linkedin_all_in_one()
     _plot_linkedin_wide()
     _plot_linkedin_highlights()
     _plot_linkedin_light_grid()
@@ -654,6 +812,9 @@ def main() -> int:
     print(DELTA_OUT_PATH)
     print(LINKEDIN_SQUARE_OUT_PATH)
     print(LINKEDIN_PORTRAIT_OUT_PATH)
+    print(LINKEDIN_SQUARE_EXPLAINED_OUT_PATH)
+    print(LINKEDIN_PORTRAIT_EXPLAINED_OUT_PATH)
+    print(LINKEDIN_ALL_IN_ONE_OUT_PATH)
     print(LINKEDIN_WIDE_OUT_PATH)
     print(LINKEDIN_HIGHLIGHTS_OUT_PATH)
     print(LINKEDIN_LIGHT_GRID_OUT_PATH)
